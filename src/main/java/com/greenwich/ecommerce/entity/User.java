@@ -1,9 +1,9 @@
 package com.greenwich.ecommerce.entity;
 
 
-import com.greenwich.ecommerce.util.Gender;
-import com.greenwich.ecommerce.util.UserStatus;
-import com.greenwich.ecommerce.util.UserType;
+import com.greenwich.ecommerce.common.enums.Gender;
+import com.greenwich.ecommerce.common.enums.UserStatus;
+import com.greenwich.ecommerce.common.enums.UserType;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
@@ -23,43 +23,38 @@ import java.util.Set;
 @Table(name = "user")
 public class User extends AbstractEntity {
 
-    @NotBlank
-    @Column(name = "first_name", nullable = false, columnDefinition = "NVARCHAR(50)")
-    private String firstName;
+    @Column(name = "full_name", nullable = false, columnDefinition = "NVARCHAR(100)", length = 100)
+    private String fullName;
 
-    @NotBlank
-    @Column(name = "last_name", nullable = false, columnDefinition = "NVARCHAR(50)")
-    private String lastName;
-
-    @Column(name = "date_of_birth")
+    @Column(name = "date_of_birth", nullable = true)
     @Temporal(TemporalType.DATE)
     private Date dateOfBirth;
 
     @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+//    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(name = "gender")
     private Gender gender;
 
-    @Column(name = "phone")
+    @Column(name = "phone", nullable = false, unique = true, length = 20)
     private String phone;
 
-    @Column(name = "email")
+    @Column(name = "email", nullable = false, unique = true, length = 255)
     private String email;
 
-    @Column(name = "username")
+    @Column(name = "username", nullable = false, unique = true, length = 100)
     private String username;
 
-    @Column(name = "password")
+    @Column(name = "password", nullable = false)
     private String password;
 
     @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    @Column(name = "type")
+//    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    @Column(name = "role")
     private UserType type;
 
     @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    @Column(name = "status")
+//    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    @Column(name = "status", nullable = false)
     private UserStatus status;
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "user")

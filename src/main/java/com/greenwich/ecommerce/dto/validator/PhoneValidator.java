@@ -6,8 +6,6 @@ import jakarta.validation.ConstraintValidatorContext;
 
 public class PhoneValidator implements ConstraintValidator<PhoneNumber, String> {
 
-    //nhiệm vụ chúng ta là viết code ở hàm này để kiểm tra xem giá trị của trường phone có hợp lệ hay không
-    //custom 1 cái annotation validator
 
     @Override
     public void initialize(PhoneNumber phoneNumberNo) {
@@ -19,7 +17,7 @@ public class PhoneValidator implements ConstraintValidator<PhoneNumber, String> 
             return false;
         }
         //validate phone numbers of format "0902345345"
-        if (phoneNo.matches("\\d{10}")) return true;
+        if (phoneNo.matches("^\\d{10}$")) return true;
             //validating phone number with -, . or spaces: 090-234-4567
         else if(phoneNo.matches("\\d{3}[-\\.\\s]\\d{3}[-\\.\\s]\\d{4}")) return true;
             //validating phone number with extension length from 3 to 5

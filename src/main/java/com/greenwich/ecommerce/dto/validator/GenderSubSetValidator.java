@@ -1,6 +1,6 @@
 package com.greenwich.ecommerce.dto.validator;
 
-import com.example.demo.util.Gender;
+import com.greenwich.ecommerce.common.enums.Gender;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 

@@ -1,4 +1,4 @@
-package com.greenwich.ecommerce.util;
+package com.greenwich.ecommerce.common.enums;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -8,5 +8,7 @@ public enum UserStatus {
     @JsonProperty("inactive")
     INACTIVE,
     @JsonProperty("isBanned")
-    IS_BANNED;
+    IS_BANNED,
+    @JsonProperty("isDeleted")
+    DELETED
 }

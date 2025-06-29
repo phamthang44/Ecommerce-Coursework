@@ -1,4 +1,4 @@
-package com.greenwich.ecommerce.util;
+package com.greenwich.ecommerce.common.enums;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

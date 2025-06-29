@@ -1,4 +1,4 @@
-package com.greenwich.ecommerce.util;
+package com.greenwich.ecommerce.common.enums;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -7,8 +7,8 @@ public enum UserType {
     ADMIN,
     @JsonProperty("customer")
     CUSTOMER,
-    @JsonProperty("seller")
-    SELLER,
+    @JsonProperty("staff")
+    STAFF,
     @JsonProperty("guest")
     GUEST
 }
