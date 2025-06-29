@@ -35,12 +35,12 @@ public abstract class AbstractEntity {
     @Temporal(TemporalType.TIMESTAMP)
     private LocalDateTime updatedAt;
 
-    @NotBlank
-    @Column(name = "created_by", nullable = false)
-    private String createdBy;
-
-    @NotBlank
-    @Column(name = "updated_by", nullable = false)
-    private String updatedBy;
+//    @NotBlank
+//    @Column(name = "created_by", nullable = false)
+//    private String createdBy;
+//
+//    @NotBlank
+//    @Column(name = "updated_by", nullable = false)
+//    private String updatedBy;
 
 }

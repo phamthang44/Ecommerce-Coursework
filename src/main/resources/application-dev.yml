@@ -3,18 +3,18 @@ spring:
     activate:
       on-profile: dev
   datasource:
-    url: ${MYSQL_URL:jdbc:mysql://localhost:3307/ecommerce_db}
+    url: ${MYSQL_URL:jdbc:mysql://localhost:3306/ecommerce_db}
     username: ${MYSQL_USER:root}
     password: ${MYSQL_PASSWORD:default_password}
   jpa:
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.MySQL8Dialect
+        dialect: org.hibernate.dialect.MySQLDialect
     show_sql: true
     hibernate:
-      ddl-auto: none
+      ddl-auto: create
   flyway:
-    enabled: true
+    enabled: false
     locations: classpath:db/migration/mysql
     baseline-on-migrate: true
     baseline-version: 1.0.0
