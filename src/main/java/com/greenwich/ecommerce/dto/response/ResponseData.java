@@ -1,9 +1,11 @@
 package com.greenwich.ecommerce.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import lombok.Getter;
+import lombok.*;
 
 @Getter
+@Setter
+@Builder
 public class ResponseData<T> {
 
     private final int status;

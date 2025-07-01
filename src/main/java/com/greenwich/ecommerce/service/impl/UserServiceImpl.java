@@ -3,12 +3,12 @@ package com.greenwich.ecommerce.service.impl;
 import com.greenwich.ecommerce.common.enums.UserStatus;
 import com.greenwich.ecommerce.common.enums.UserType;
 import com.greenwich.ecommerce.dto.request.RegisterRequestDTO;
+import com.greenwich.ecommerce.entity.Role;
 import com.greenwich.ecommerce.entity.User;
+import com.greenwich.ecommerce.repository.RoleRepository;
 import com.greenwich.ecommerce.repository.UserRepository;
 import com.greenwich.ecommerce.service.UserService;
 import jakarta.transaction.Transactional;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Transactional
@@ -62,6 +63,9 @@ public class UserServiceImpl implements UserService {
             throw new IllegalArgumentException("Username is already registered");
         }
 
+        Role role = roleRepository.findByName(UserType.CUSTOMER.getName())
+                .orElseThrow(() -> new IllegalArgumentException("Role not found"));
+
         String encodedPassword = passwordEncoder.encode(registerRequestDTO.getPassword());
         User user = User.builder()
                 .email(registerRequestDTO.getEmail())
@@ -71,7 +75,7 @@ public class UserServiceImpl implements UserService {
                 .username(registerRequestDTO.getUsername())
                 .fullName(registerRequestDTO.getFullName())
                 .phone(registerRequestDTO.getPhoneNumber())
-                .type(UserType.CUSTOMER)
+                .role(role)
                 .status(UserStatus.ACTIVE)
                 .addresses(null)
                 .build();

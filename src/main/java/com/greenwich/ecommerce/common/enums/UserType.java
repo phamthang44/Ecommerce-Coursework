@@ -10,5 +10,18 @@ public enum UserType {
     @JsonProperty("staff")
     STAFF,
     @JsonProperty("guest")
-    GUEST
+    GUEST;
+
+    public static UserType fromString(String type) {
+        for (UserType userType : UserType.values()) {
+            if (userType.name().equalsIgnoreCase(type)) {
+                return userType;
+            }
+        }
+        throw new IllegalArgumentException("Unknown user type: " + type);
+    }
+
+    public String getName() {
+        return this.name();
+    }
 }
