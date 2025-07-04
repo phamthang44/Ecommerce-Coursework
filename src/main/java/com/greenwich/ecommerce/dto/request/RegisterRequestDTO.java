@@ -5,12 +5,18 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 
 import java.io.Serializable;
 
 @Getter
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 public class RegisterRequestDTO implements Serializable {
 
     @NotBlank(message = "Email is required")
@@ -30,10 +36,14 @@ public class RegisterRequestDTO implements Serializable {
     private String username;
 
     @NotBlank(message = "Password is required")
-    @Size(min = 8, max = 64, message = "Password must be between 8 and 64 characters")
     @Schema(
             description = "The password of the user",
             example = "abc12345678!@#"
+    )
+    @Pattern(
+            regexp = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[@$!%*#?&])[A-Za-z\\d@$!%*#?&]{8,}$",
+            message =
+                    "The password must be at least 8 characters, including letters, numbers, and special characters."
     )
     private String password;
 

@@ -12,10 +12,11 @@ CREATE TABLE user
     email         VARCHAR(255) NOT NULL,
     username      VARCHAR(100) NOT NULL,
     password      VARCHAR(255) NOT NULL,
-    `role`        VARCHAR(255) NULL,
+    role_id       VARCHAR(255) NULL,
     status        VARCHAR(255) NOT NULL,
     CONSTRAINT pk_user PRIMARY KEY (id)
 );
+
 
 ALTER TABLE user
     ADD CONSTRAINT uc_user_email UNIQUE (email);

@@ -5,10 +5,7 @@ import com.greenwich.ecommerce.common.enums.Gender;
 import com.greenwich.ecommerce.common.enums.UserStatus;
 import com.greenwich.ecommerce.common.enums.UserType;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
 import lombok.*;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
 
 import java.util.Date;
 import java.util.HashSet;
@@ -47,14 +44,15 @@ public class User extends AbstractEntity {
     @Column(name = "password", nullable = false)
     private String password;
 
-    @Enumerated(EnumType.STRING)
+//    @Enumerated(EnumType.STRING)
 //    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    @Column(name = "role")
-    private UserType type;
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "role_id", nullable = false)
+    private Role role;
 
     @Enumerated(EnumType.STRING)
 //    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    @Column(name = "status", nullable = false)
+    @Column(name = "status")
     private UserStatus status;
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "user")
