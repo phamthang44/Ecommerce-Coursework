@@ -20,12 +20,10 @@ import java.util.List;
 @Table(name = "category")
 public class Category extends AbstractEntity {
 
-    @NotBlank
-    @Column(nullable = false, unique = true, length = 50)
+    @Column(name = "name",nullable = false, unique = true, length = 50)
     private String name;
 
-    @NotBlank
-    @Column(nullable = false, columnDefinition = "TEXT")
+    @Column(name = "description", nullable = false, columnDefinition = "TEXT")
     private String description;
 
     @OneToMany(mappedBy = "category")

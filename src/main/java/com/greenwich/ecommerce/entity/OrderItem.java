@@ -9,8 +9,8 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-//@Entity
-//@Table(name = "order_item")
+@Entity
+@Table(name = "order_item")
 public class OrderItem extends AbstractEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)

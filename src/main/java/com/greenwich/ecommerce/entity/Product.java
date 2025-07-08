@@ -1,7 +1,6 @@
 package com.greenwich.ecommerce.entity;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 import java.math.BigDecimal;
@@ -10,21 +9,26 @@ import java.math.BigDecimal;
 @Table(name = "product")
 public class Product extends AbstractEntity {
 
-    @NotBlank
     @Column(name = "name",nullable = false, length = 100)
     private String name;
 
-    @NotBlank
     @Column(name = "description", nullable = false, length = 100)
     private String description;
 
-    @NotNull
+    @Column(name = "unit", nullable = false)
+    private String unit;
+
     @Column(name = "price", nullable = false, precision = 10, scale = 2)
     private BigDecimal price;
 
+    @Column(name = "stock_quantity", nullable = false)
+    private int stockQuantity;
+
+    @Column(name = "stock_status", nullable = false)
+    private String stockStatus;
+
     @ManyToOne
     @JoinColumn(name = "category_id", nullable = false)
-    @NotNull
     private Category category;
 
 

@@ -1,4 +1,28 @@
 package com.greenwich.ecommerce.entity;
 
-public class CartItem {
+import jakarta.persistence.*;
+import lombok.*;
+
+@NoArgsConstructor
+@AllArgsConstructor
+@Getter
+@Setter
+@Builder
+@Entity
+@Table(name = "cart_item")
+public class CartItem extends AbstractEntity {
+
+    @ManyToOne
+    @JoinColumn(name = "cart_id", nullable = false)
+    private Cart cart;
+
+    @Column(name = "item_id", nullable = false)
+    private Long itemId;
+
+    @Column(name = "item_type", nullable = false)
+    private String itemType;
+
+    @Column(name = "quantity", nullable = false)
+    private int quantity;
+
 }

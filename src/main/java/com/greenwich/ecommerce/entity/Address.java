@@ -9,7 +9,7 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 @Entity
-@Table(name = "address")
+@Table(name = "user_address")
 public class Address extends AbstractEntity {
 
     @Column(name = "address_line", nullable = false)
@@ -19,5 +19,16 @@ public class Address extends AbstractEntity {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+    @Column(name = "city")
+    private String city;
+
+    @Column(name = "postcode")
+    private String postalCode;
+
+    @Column(name = "country")
+    private String country;
+
+    @Column(name = "is_default")
+    private boolean isDefault;
 
 }
