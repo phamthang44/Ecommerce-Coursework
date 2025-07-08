@@ -29,6 +29,18 @@ public class OpenApiConfig {
     }
 
     @Bean
+    public OpenAPI openAPI1(@Value("${open.api-1.title}") String title,
+                           @Value("${open.api-1.version}") String version,
+                           @Value("${open.api-1.description}") String description,
+                           @Value("${open.api-1.serverUrl}") String serverUrl,
+                           @Value("${open.api-1.serverName}") String serverName) {
+        return new OpenAPI().info(new Info().title(title)
+                        .version(version).description(description)
+                        .license(new License().name("API license").url("http://domain.vn/license")))
+                .servers(List.of(new Server().url(serverUrl).description(serverName)));
+    }
+
+    @Bean
     public GroupedOpenApi groupedOpenApi() {
         return GroupedOpenApi.builder()
                 .group("api-service-1")

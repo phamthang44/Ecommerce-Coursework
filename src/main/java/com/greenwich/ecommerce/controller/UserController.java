@@ -27,20 +27,7 @@ public class UserController {
 
     private final UserService userService;
 
-    @Operation(method= "POST", summary="Add user", description="This API allows you to add a new user")
-    @PostMapping(value = "/register")
-    public ResponseData<?> register(@Valid @RequestBody RegisterRequestDTO user) {
 
-        log.info("Request add user = {}", user.getEmail());
-        try {
-            long userId = userService.registerUser(user);
-            return new ResponseData<Object>(201, "User registered successfully", userId);
-        } catch (Exception e) {
-            log.error("Error creating user: {}", e.getMessage());
-            return new ResponseError(500, "Internal server error: " + e.getMessage());
-        }
-
-    }
 
 
 

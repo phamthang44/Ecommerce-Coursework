@@ -7,6 +7,7 @@ import java.math.BigDecimal;
 
 @Entity
 @Table(name = "product")
+@AttributeOverride(name = "id", column = @Column(name = "product_id"))
 public class Product extends AbstractEntity {
 
     @Column(name = "name",nullable = false, length = 100)

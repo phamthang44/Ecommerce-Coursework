@@ -15,6 +15,7 @@ import java.util.List;
 @Builder
 @Entity
 @Table(name = "cart")
+@AttributeOverride(name = "id", column = @Column(name = "cart_id"))
 public class Cart extends AbstractEntity {
     @OneToOne
     @JoinColumn(name = "user_id", nullable = false)

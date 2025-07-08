@@ -10,6 +10,7 @@ import lombok.*;
 @Builder
 @Entity
 @Table(name = "user_address")
+@AttributeOverride(name = "id", column = @Column(name = "address_id"))
 public class Address extends AbstractEntity {
 
     @Column(name = "address_line", nullable = false)

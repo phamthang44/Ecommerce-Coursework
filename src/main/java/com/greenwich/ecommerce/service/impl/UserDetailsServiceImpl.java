@@ -32,7 +32,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
                 .orElseThrow(() -> new NotFoundException("User"));
 
         List<GrantedAuthority> authorityList = List.of(
-                new SimpleGrantedAuthority(user.getRole().getName())
+                new SimpleGrantedAuthority("ROLE_" + user.getRole().getName().toUpperCase())
         );
 
         authorityList.forEach(authority -> log.info("Authority: {}", authority));
@@ -40,6 +40,36 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         return SecurityUserDetails.build(user, authorityList);
     }
 
+//    public User getUser() {
+//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+//        if (authentication == null) return null;
+//
+//        Object principal = authentication.getPrincipal();
+//        log.info("Principal test v1:  {}", principal);
+//
+//        if (principal instanceof SecurityUserDetails securityUserDetails) {
+//            // Return the already fetched user from the authentication context
+//            return securityUserDetails.getUser();
+//        }
+//
+//        return null;
+//    }
+
+
+//    public UserDetails loadUserByUsername(String mail) throws UsernameNotFoundException {
+//        User user = (User) userRepository
+//                .findByEmail(mail)
+//                .orElseThrow(() -> new NotFoundException("User"));
+//
+//        List<GrantedAuthority> authorityList = List.of(
+//                new SimpleGrantedAuthority(user.getRole().getName())
+//        );
+//
+//        authorityList.forEach(authority -> log.info("Authority: {}", authority));
+//
+//        return SecurityUserDetails.build(user, authorityList);
+//    }
+//
     public Optional<User> getCurrentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null) return Optional.empty();

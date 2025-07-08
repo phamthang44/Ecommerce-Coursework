@@ -58,6 +58,7 @@ public class UserServiceImpl implements UserService {
             log.error("Phone number cannot be null or empty");
             throw new IllegalArgumentException("Phone number cannot be null or empty");
         }
+
         if (userRepository.existsByUsername(registerRequestDTO.getUsername())) {
             log.error("Username {} is already registered", registerRequestDTO.getUsername());
             throw new IllegalArgumentException("Username is already registered");
