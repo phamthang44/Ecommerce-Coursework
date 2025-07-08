@@ -7,6 +7,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "`order`")
+@AttributeOverride(name = "id", column = @Column(name = "order_id"))
 public class Order extends AbstractEntity {
 
     @ManyToOne

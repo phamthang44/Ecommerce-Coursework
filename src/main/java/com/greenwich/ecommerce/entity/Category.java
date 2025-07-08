@@ -1,10 +1,7 @@
 package com.greenwich.ecommerce.entity;
 
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
@@ -18,6 +15,7 @@ import java.util.List;
 @Builder
 @Entity
 @Table(name = "category")
+@AttributeOverride(name = "id", column = @Column(name = "category_id"))
 public class Category extends AbstractEntity {
 
     @Column(name = "name",nullable = false, unique = true, length = 50)

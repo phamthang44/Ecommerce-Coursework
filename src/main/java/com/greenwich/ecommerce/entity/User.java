@@ -18,6 +18,7 @@ import java.util.Set;
 @Builder
 @Entity
 @Table(name = "user")
+@AttributeOverride(name = "id", column = @Column(name = "user_id"))
 public class User extends AbstractEntity {
 
     @Column(name = "full_name", nullable = false, columnDefinition = "NVARCHAR(100)", length = 100)

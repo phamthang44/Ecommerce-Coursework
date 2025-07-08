@@ -10,6 +10,7 @@ import lombok.*;
 @Builder
 @Entity
 @Table(name = "cart_item")
+@AttributeOverride(name = "id", column = @Column(name = "cart_item_id"))
 public class CartItem extends AbstractEntity {
 
     @ManyToOne

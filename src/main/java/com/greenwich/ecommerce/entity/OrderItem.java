@@ -11,6 +11,7 @@ import lombok.*;
 @Builder
 @Entity
 @Table(name = "order_item")
+@AttributeOverride(name = "id", column = @Column(name = "order_item_id"))
 public class OrderItem extends AbstractEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
