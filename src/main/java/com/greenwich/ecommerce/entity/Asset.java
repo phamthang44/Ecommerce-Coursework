@@ -9,7 +9,7 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 @Entity
-@Table(name = "user_address")
+@Table(name = "asset")
 @AttributeOverride(name = "id", column = @Column(name = "asset_id"))
 public class Asset extends AbstractEntity {
     @Column(name = "file_url", nullable = false)

@@ -15,6 +15,6 @@ import lombok.*;
 @Table(name = "order_status")
 @AttributeOverride(name = "id", column = @Column(name = "status_id"))
 public class OrderStatus extends AbstractEntity {
-    @Column(name = "status_name", nullable = false)
+    @Column(name = "name", nullable = false)
     private String statusName;
 }
