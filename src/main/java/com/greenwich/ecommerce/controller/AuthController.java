@@ -9,6 +9,7 @@ import com.greenwich.ecommerce.service.UserService;
 import com.greenwich.ecommerce.service.impl.JwtTokenService;
 import com.greenwich.ecommerce.service.impl.UserDetailsServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,8 +36,11 @@ public class AuthController {
     private final UserService userService;
     private final UserDetailsServiceImpl userDetailsService;
 
+
+    @Operation(method= "POST", summary="Login account", description="This API allows you to check login response")
     @PostMapping("/login")
     public ResponseEntity<ResponseData<?>> login(@Valid @RequestBody LoginRequest request) {
+
         Authentication auth = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
         );
@@ -48,19 +52,6 @@ public class AuthController {
         LoginResponse loginResponse = new LoginResponse(200, "Login successful", token);
 
         return ResponseEntity.status(200).body(loginResponse);
-//        try {
-//
-//
-//        } catch (BadCredentialsException ex) {
-//            log.error("Login failed for email: {}", request.getEmail());
-//            return ResponseEntity.status(401).body(new ResponseError(401, "Invalid email or password"));
-//        } catch (UsernameNotFoundException ex) {
-//            log.error("User not found: {}", request.getEmail());
-//            return ResponseEntity.status(401).body(new ResponseError(401, "Invalid email or password"));
-//        } catch (Exception ex) {
-//            log.error("Unexpected error during login: {}", ex.getMessage());
-//            return ResponseEntity.status(500).body(new ResponseError(500, "Internal server error"));
-//        }
     }
 
     @Operation(method= "POST", summary="Add user", description="This API allows you to add a new user")
@@ -73,6 +64,15 @@ public class AuthController {
         return new ResponseData<>(201, "User registered successfully", userId);
 
     }
+
+    @PostMapping("/logout")
+    public ResponseEntity<ResponseData<Void>> logout(HttpServletRequest request) {
+        // Nothing just return the message
+        return ResponseEntity.status(200)
+                .body(new ResponseData<>(200, "Logout successful", null));
+    }
+
+
 }
 
 
@@ -96,3 +96,16 @@ public class AuthController {
 //        String token = jwtTokenService.generateToken(userDetails);
 //        LoginResponse loginResponse = new LoginResponse(200, "Login successful", userResponse, token);
 //        return ResponseEntity.ok(loginResponse);
+//        try {
+//
+//
+//        } catch (BadCredentialsException ex) {
+//            log.error("Login failed for email: {}", request.getEmail());
+//            return ResponseEntity.status(401).body(new ResponseError(401, "Invalid email or password"));
+//        } catch (UsernameNotFoundException ex) {
+//            log.error("User not found: {}", request.getEmail());
+//            return ResponseEntity.status(401).body(new ResponseError(401, "Invalid email or password"));
+//        } catch (Exception ex) {
+//            log.error("Unexpected error during login: {}", ex.getMessage());
+//            return ResponseEntity.status(500).body(new ResponseError(500, "Internal server error"));
+//        }
