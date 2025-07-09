@@ -7,6 +7,7 @@ import com.greenwich.ecommerce.common.enums.UserType;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
@@ -26,7 +27,7 @@ public class User extends AbstractEntity {
 
     @Column(name = "date_of_birth", nullable = true)
     @Temporal(TemporalType.DATE)
-    private Date dateOfBirth;
+    private LocalDate dateOfBirth;
 
     @Enumerated(EnumType.STRING)
 //    @JdbcTypeCode(SqlTypes.NAMED_ENUM)

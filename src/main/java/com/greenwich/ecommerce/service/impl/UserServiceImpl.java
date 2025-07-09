@@ -1,10 +1,19 @@
 package com.greenwich.ecommerce.service.impl;
 
+import com.greenwich.ecommerce.common.enums.Gender;
 import com.greenwich.ecommerce.common.enums.UserStatus;
 import com.greenwich.ecommerce.common.enums.UserType;
+import com.greenwich.ecommerce.common.mapper.UserMapper;
+import com.greenwich.ecommerce.common.util.Util;
 import com.greenwich.ecommerce.dto.request.RegisterRequestDTO;
+import com.greenwich.ecommerce.dto.request.UserRequestDTO;
+import com.greenwich.ecommerce.dto.response.UserDetailsResponse;
 import com.greenwich.ecommerce.entity.Role;
 import com.greenwich.ecommerce.entity.User;
+import com.greenwich.ecommerce.exception.DuplicateResourceException;
+import com.greenwich.ecommerce.exception.InvalidDataException;
+import com.greenwich.ecommerce.exception.NotFoundException;
+import com.greenwich.ecommerce.exception.ResourceNotFoundException;
 import com.greenwich.ecommerce.repository.RoleRepository;
 import com.greenwich.ecommerce.repository.UserRepository;
 import com.greenwich.ecommerce.service.UserService;
@@ -14,6 +23,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.util.Optional;
+
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -22,67 +34,70 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
+    private final UserValidator userValidator;
+    private final UserMapper userMapper;
 
     @Transactional
     public long registerUser(RegisterRequestDTO registerRequestDTO) {
 
         if (registerRequestDTO == null) {
             log.error("Register request is null");
-            throw new IllegalArgumentException("Register request cannot be null");
+            throw new InvalidDataException("Register request cannot be null");
         }
 
         log.info("Registering user with email: {}", registerRequestDTO.getEmail());
         // Save user to the repository and return user ID
 
-        if (userRepository.existsByEmail(registerRequestDTO.getEmail())) {
-            log.error("Email {} is already registered", registerRequestDTO.getEmail());
-            throw new IllegalArgumentException("Email is already registered");
-        }
+        String email = registerRequestDTO.getEmail().trim();
+        String username = registerRequestDTO.getUsername().trim();
+        String password = registerRequestDTO.getPassword().trim();
+        String fullName = registerRequestDTO.getFullName().trim();
+        String phoneNumber = registerRequestDTO.getPhoneNumber().trim();
 
-        if (registerRequestDTO.getPassword() == null || registerRequestDTO.getPassword().isEmpty()) {
-            log.error("Password cannot be null or empty");
-            throw new IllegalArgumentException("Password cannot be null or empty");
-        }
+        userValidator.validateEmail(email);
 
-        if (registerRequestDTO.getUsername() == null || registerRequestDTO.getUsername().isEmpty()) {
-            log.error("Username cannot be null or empty");
-            throw new IllegalArgumentException("Username cannot be null or empty");
-        }
+        userValidator.validatePassword(password);
 
-        if (registerRequestDTO.getFullName() == null || registerRequestDTO.getFullName().isEmpty()) {
-            log.error("Full name cannot be null or empty");
-            throw new IllegalArgumentException("Full name cannot be null or empty");
-        }
+        userValidator.validateUsername(username);
 
-        if (registerRequestDTO.getPhoneNumber() == null || registerRequestDTO.getPhoneNumber().isEmpty()) {
-            log.error("Phone number cannot be null or empty");
-            throw new IllegalArgumentException("Phone number cannot be null or empty");
-        }
+        userValidator.validateFullName(fullName);
 
-        if (userRepository.existsByUsername(registerRequestDTO.getUsername())) {
-            log.error("Username {} is already registered", registerRequestDTO.getUsername());
-            throw new IllegalArgumentException("Username is already registered");
-        }
+        userValidator.validatePhoneNumber(phoneNumber);
+
+        Gender gender = registerRequestDTO.getGender() != null ? registerRequestDTO.getGender() : Gender.OTHER;
+        LocalDate dateOfBirth = registerRequestDTO.getDateOfBirth();
+
 
         Role role = roleRepository.findByName(UserType.CUSTOMER.getName())
-                .orElseThrow(() -> new IllegalArgumentException("Role not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Role not found"));
 
         String encodedPassword = passwordEncoder.encode(registerRequestDTO.getPassword());
-        User user = User.builder()
-                .email(registerRequestDTO.getEmail())
-                .password(encodedPassword)
-                .gender(null)
-                .dateOfBirth(null)
-                .username(registerRequestDTO.getUsername())
-                .fullName(registerRequestDTO.getFullName())
-                .phone(registerRequestDTO.getPhoneNumber())
-                .role(role)
-                .status(UserStatus.ACTIVE)
-                .addresses(null)
-                .build();
 
+        User user = userMapper.toUser(registerRequestDTO);
+        user.setPassword(encodedPassword);
+        user.setRole(role);
+        user.setStatus(UserStatus.ACTIVE);
+        user.saveAddress(null);
+        user.setGender(gender);
+        user.setDateOfBirth(dateOfBirth);
         return userRepository.save(user).getId();
 
     }
+
+    public UserDetailsResponse getUserDetailsByEmail(String email) {
+        log.info("Fetching user details for email: {}", email);
+
+        User user = (User) userRepository.findByEmail(email).orElseThrow(() -> new NotFoundException("User"));
+
+        return UserDetailsResponse.builder()
+                .email(user.getEmail())
+                .username(user.getUsername())
+                .fullName(user.getFullName())
+                .phoneNumber(user.getPhone())
+                .role(user.getRole().getName())
+                .build();
+
+    }
+
 
 }

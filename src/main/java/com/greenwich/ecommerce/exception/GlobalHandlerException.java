@@ -1,10 +1,16 @@
 package com.greenwich.ecommerce.exception;
 
+
+import com.greenwich.ecommerce.dto.response.ResponseError;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.ConstraintViolationException;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -14,13 +20,15 @@ import org.springframework.web.context.request.WebRequest;
 
 import java.util.Date;
 
+import static com.greenwich.ecommerce.common.enums.ErrorCode.BAD_CREDENTIAL_LOGIN;
 import static org.springframework.http.HttpStatus.*;
 import static org.springframework.http.HttpStatus.CONFLICT;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @RestControllerAdvice
-public class GlobalHandlerException extends Throwable {
+@Slf4j
+public class GlobalHandlerException {
 
     /**
      * Handle exception when validate data
@@ -151,6 +159,35 @@ public class GlobalHandlerException extends Throwable {
         return errorResponse;
     }
 
+    @ExceptionHandler({BadCredentialsException.class, UsernameNotFoundException.class})
+    @ResponseStatus(UNAUTHORIZED)
+    @ApiResponse(responseCode = "401", description = "Unauthorized",
+            content = {@Content(mediaType = APPLICATION_JSON_VALUE,
+                    examples = @ExampleObject(
+                            name = "401 Response",
+                            summary = "Handle exception when unauthorized access",
+                            value = """
+                                            { \s
+                                              "status": 401,
+                                              "message": "Invalid email or password"
+                                            }
+                                           \s"""
+                    ))})
+    public ResponseEntity<ResponseError> handleUnauthorizedException(Exception e, WebRequest request) {
+
+        if (e instanceof BadCredentialsException || e instanceof UsernameNotFoundException) {
+            int code = Integer.parseInt(BAD_CREDENTIAL_LOGIN.getCode());
+            ResponseError responseError = new ResponseError(code, "Unauthorized: Invalid email or password");
+            // Handle bad credentials or user not found
+
+            log.error("Unauthorized access: {}", e.getMessage());
+
+            return  ResponseEntity.status(code).body(responseError);
+        }
+
+        return ResponseEntity.status(UNAUTHORIZED).body(new ResponseError(UNAUTHORIZED.value(), e.getMessage()));
+    }
+
     /**
      * Handle exception when internal server error
      *
@@ -187,4 +224,6 @@ public class GlobalHandlerException extends Throwable {
 
         return errorResponse;
     }
+
+
 }

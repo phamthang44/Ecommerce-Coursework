@@ -7,6 +7,7 @@ import com.greenwich.ecommerce.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -29,7 +30,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     public UserDetails loadUserByUsername(String mail) throws UsernameNotFoundException {
         User user = (User) userRepository
                 .findByEmail(mail)
-                .orElseThrow(() -> new NotFoundException("User"));
+                .orElseThrow(() -> new UsernameNotFoundException("Invalid email or password"));
 
         List<GrantedAuthority> authorityList = List.of(
                 new SimpleGrantedAuthority("ROLE_" + user.getRole().getName().toUpperCase())
