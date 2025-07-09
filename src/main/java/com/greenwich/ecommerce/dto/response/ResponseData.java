@@ -24,5 +24,4 @@ public class ResponseData<T> {
         this.data = data;
     }
 
-
 }
