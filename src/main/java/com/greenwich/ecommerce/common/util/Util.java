@@ -27,7 +27,7 @@ public class Util {
     }
 
     public static boolean isInvalidPhoneNumberFormat(String phoneNumber) {
-        String phoneRegex = "^\\?[0,9]{1,10}$";
+        String phoneRegex = "^0\\d{9,10}$";
         return !phoneNumber.matches(phoneRegex);
     }
 
