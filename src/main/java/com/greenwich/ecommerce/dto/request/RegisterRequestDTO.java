@@ -1,5 +1,8 @@
 package com.greenwich.ecommerce.dto.request;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.greenwich.ecommerce.common.enums.Gender;
+import com.greenwich.ecommerce.dto.validator.GenderSubset;
 import com.greenwich.ecommerce.dto.validator.PhoneNumber;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
@@ -12,6 +15,7 @@ import lombok.NoArgsConstructor;
 
 
 import java.io.Serializable;
+import java.time.LocalDate;
 
 @Getter
 @AllArgsConstructor
@@ -51,7 +55,7 @@ public class RegisterRequestDTO implements Serializable {
     @PhoneNumber
     @Schema(
             description = "The phone number of the user",
-            example = "01234567890"
+            example = "0123456789"
     )
     private String phoneNumber;
 
@@ -62,6 +66,23 @@ public class RegisterRequestDTO implements Serializable {
             example = "Nguyen Van A"
     )
     private String fullName;
+
+    @Schema(
+            description = "The address of the user",
+            example = "123 Main St, City, Country"
+    )
+    private String address;
+
+    @GenderSubset(anyOf = {Gender.FEMALE, Gender.MALE, Gender.OTHER}, message = "Invalid gender value")
+    private Gender gender;
+
+    @Schema(
+            description = "The date of birth of the user",
+            example = "1990-01-01"
+    )
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    private LocalDate dateOfBirth;
+
 
 
 }

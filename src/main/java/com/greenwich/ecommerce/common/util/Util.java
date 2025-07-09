@@ -5,10 +5,8 @@ public class Util {
     public static String normalizePhoneNumber(String raw, String countryCode) {
         if (raw == null || countryCode == null) return null;
 
-        // Bỏ dấu cách, ngoặc, gạch ngang, v.v.
         String cleaned = raw.replaceAll("[^0-9]", "");
 
-        // Nếu bắt đầu bằng 0 thì bỏ đi để nối vào mã quốc gia
         if (cleaned.startsWith("0")) {
             cleaned = cleaned.substring(1);
         }
@@ -19,7 +17,37 @@ public class Util {
             case "UK":
                 return "+44" + cleaned;
             default:
-                return null; // không hỗ trợ quốc gia khác
+                return null;
         }
     }
+
+    public static boolean isInvalidEmailFormat(String email) {
+        String emailRegex = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$";
+        return !email.matches(emailRegex);
+    }
+
+    public static boolean isInvalidPhoneNumberFormat(String phoneNumber) {
+        String phoneRegex = "^\\?[0,9]{1,10}$";
+        return !phoneNumber.matches(phoneRegex);
+    }
+
+    public static boolean isInvalidPasswordFormat(String password) {
+        String passwordRegex = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[@$!%*#?&])[A-Za-z\\d@$!%*#?&]{8,}$";
+        return !password.matches(passwordRegex);
+    }
+
+    public static boolean isInvalidFullNameFormat(String fullName) {
+        String fullNameRegex = "^[\\p{L} '-]{2,50}$";
+        return !fullName.matches(fullNameRegex);
+    }
+
+    public static boolean isInvalidEmailLength(String email) {
+        return email.length() >= 255; //nếu invalid thì trả về true
+    }
+
+    public static boolean isNullOrEmpty(String str) {
+        return str == null || str.trim().isEmpty();
+    }
+
+
 }
