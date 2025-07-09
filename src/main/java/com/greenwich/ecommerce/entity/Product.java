@@ -10,6 +10,10 @@ import java.math.BigDecimal;
 @AttributeOverride(name = "id", column = @Column(name = "product_id"))
 public class Product extends AbstractEntity {
 
+    @ManyToOne
+    @JoinColumn(name = "category_id", nullable = false)
+    private Category category;
+
     @Column(name = "name",nullable = false, length = 100)
     private String name;
 
@@ -27,10 +31,6 @@ public class Product extends AbstractEntity {
 
     @Column(name = "stock_status", nullable = false)
     private String stockStatus;
-
-    @ManyToOne
-    @JoinColumn(name = "category_id", nullable = false)
-    private Category category;
 
 
 }
