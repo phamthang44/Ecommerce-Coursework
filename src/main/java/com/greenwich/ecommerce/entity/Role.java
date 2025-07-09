@@ -13,7 +13,6 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "role")
-@AttributeOverride(name = "id", column = @Column(name = "role_id"))
 public class Role {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

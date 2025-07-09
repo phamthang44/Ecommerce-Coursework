@@ -15,14 +15,22 @@ import lombok.*;
 public class OrderItem extends AbstractEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(nullable = false)
+    @JoinColumn(name = "order_id", nullable = false)
     private Order order;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(nullable = false)
-    private Product product;
+    @Column(name = "item_id", nullable = false)
+    private Long itemId; // Cai nay la product_id nhung ma hardcode
 
+    @Column(name = "item_type", nullable = false)
+    private String itemType;
+
+    @Column(name = "quantity", nullable = false)
     private Integer quantity;
+
+    @Column(name = "unit_price", nullable = false)
     private Double price;
+
+    @Column(name = "subtotal", nullable = true)
+    private Double subtotal;
 
 }
