@@ -1,6 +1,7 @@
 package com.greenwich.ecommerce.service.impl;
 
 import com.greenwich.ecommerce.dto.request.ProductRequestPostDTO;
+import com.greenwich.ecommerce.dto.response.PageResponse;
 import com.greenwich.ecommerce.dto.response.ProductResponseDTO;
 import com.greenwich.ecommerce.entity.Product;
 import com.greenwich.ecommerce.exception.InvalidDataException;
@@ -9,9 +10,13 @@ import com.greenwich.ecommerce.repository.ProductRepository;
 import com.greenwich.ecommerce.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.security.InvalidParameterException;
+import java.util.List;
 
 @Service
 @Slf4j
@@ -72,6 +77,39 @@ public class ProductServiceImpl implements ProductService {
                 .stockStatus(product.getStockStatus())
                 .quantity(product.getStockQuantity())
                 .unit(product.getUnit())
+                .build();
+    }
+
+
+    @Override
+    public PageResponse<Object> getAllProducts(int pageNo, int pageSize) {
+        int page = 0;
+        if (pageNo > 0) {
+            page = pageNo - 1; // Convert to zero-based index
+        }
+
+        if (pageNo < 0 || pageSize <= 0) {
+            log.error("Invalid pagination parameters: pageNo={}, pageSize={}", pageNo, pageSize);
+            throw new InvalidDataException("Page number and size must be non-negative and positive respectively");
+        }
+
+
+        Pageable pageable = PageRequest.of(page, pageSize);
+        Page<Product> products = productRepository.findAll(pageable);
+        List<ProductResponseDTO> responses = products.stream().map(product -> ProductResponseDTO.builder()
+                .productName(product.getName())
+                .productDescription(product.getDescription())
+                .price(product.getPrice())
+                .stockStatus(product.getStockStatus())
+                .quantity(product.getStockQuantity())
+                .unit(product.getUnit())
+                .build()).toList();
+
+        return PageResponse.builder()
+                .pageNo(pageNo)
+                .pageSize(pageSize)
+                .totalPages(products.getTotalPages())
+                .items(responses)
                 .build();
     }
 }

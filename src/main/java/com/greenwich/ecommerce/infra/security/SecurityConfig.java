@@ -78,12 +78,12 @@ public class SecurityConfig {
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> {
                         for (String url : PUBLIC_LIST) {
-                        auth.requestMatchers(url).permitAll();
+                            auth.requestMatchers(url).permitAll();
                         }
                         for (String url : WHITE_LIST) {
                             auth.requestMatchers(url).permitAll();
                         }
-                        auth.anyRequest().permitAll();
+                        auth.anyRequest().authenticated();
                     }
                 )
                 .authenticationProvider(authenticationProvider())

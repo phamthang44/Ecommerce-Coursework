@@ -166,13 +166,16 @@ public class GlobalHandlerException {
                     examples = @ExampleObject(
                             name = "401 Response",
                             summary = "Handle exception when unauthorized access",
-                            value = """
-                                            { \s
+                            value =        """
+                                           {
                                               "status": 401,
-                                              "message": "Invalid email or password"
-                                            }
-                                           \s"""
-                    ))})
+                                              "message": "Unauthorized Access : missing or invalid credentials"
+                                           }
+                                          """
+                        )
+                    )
+                }
+            )
     public ResponseEntity<ResponseError> handleUnauthorizedException(Exception e, WebRequest request) {
 
         if (e instanceof BadCredentialsException || e instanceof UsernameNotFoundException) {
