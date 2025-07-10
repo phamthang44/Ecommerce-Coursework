@@ -17,11 +17,14 @@ public class CartItem extends AbstractEntity {
     @JoinColumn(name = "cart_id", nullable = false)
     private Cart cart;
 
-    @Column(name = "item_type", nullable = false)
-    private String itemType;
+//    @Column(name = "item_type", nullable = false)
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "item_type", nullable = false)
+    private Category itemType;
 
-    @Column(name = "item_id", nullable = false)
-    private Long itemId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "item_id", nullable = false)
+    private Product product;
 
     @Column(name = "quantity", nullable = false)
     private int quantity;

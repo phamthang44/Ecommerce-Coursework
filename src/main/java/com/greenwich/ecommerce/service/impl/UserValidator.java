@@ -13,8 +13,6 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class UserValidator {
 
-    private final UserRepository userRepository;
-
     public void validateEmail(String email) {
         if (Util.isNullOrEmpty(email)) {
             log.error("Email is null or empty");
@@ -27,10 +25,6 @@ public class UserValidator {
         if (Util.isInvalidEmailLength(email)) {
             log.error("Invalid email length");
             throw new InvalidDataException("Email must not exceed 255 characters");
-        }
-        if (userRepository.existsByEmail(email)) {
-            log.error("Email already exists");
-            throw new DuplicateResourceException("Email is already registered");
         }
     }
 
@@ -49,10 +43,6 @@ public class UserValidator {
         if (Util.isNullOrEmpty(username)) {
             log.error("Username cannot be null or empty");
             throw new InvalidDataException("Username is required");
-        }
-        if (userRepository.existsByUsername(username)) {
-            log.error("Username {} is already registered", username);
-            throw new DuplicateResourceException("Username is already registered");
         }
     }
 

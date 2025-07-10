@@ -18,9 +18,6 @@ import java.io.Serializable;
 import java.time.LocalDate;
 
 @Getter
-@AllArgsConstructor
-@NoArgsConstructor
-@Builder
 public class RegisterRequestDTO implements Serializable {
 
     @NotBlank(message = "Email is required")

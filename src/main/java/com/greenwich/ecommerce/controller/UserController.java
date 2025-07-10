@@ -1,10 +1,11 @@
 package com.greenwich.ecommerce.controller;
 
-import com.greenwich.ecommerce.dto.request.RegisterRequestDTO;
+import com.greenwich.ecommerce.dto.request.UserRequestPatchDTO;
 import com.greenwich.ecommerce.dto.response.ResponseData;
-import com.greenwich.ecommerce.dto.response.ResponseError;
+
+import com.greenwich.ecommerce.dto.response.UserDetailsResponse;
 import com.greenwich.ecommerce.service.UserService;
-import io.swagger.v3.oas.annotations.Operation;
+
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -24,11 +25,14 @@ public class UserController {
 
     private final UserService userService;
 
-//    @GetMapping("/{id}")
-//    public ResponseEntity<?> getUser(@RequestParam int id) {
-//        Cart a = service.getCart(id);
-//
-//    }
+    @PatchMapping("/{id}")
+    public ResponseEntity<ResponseData<UserDetailsResponse>> updateUser(@PathVariable("id") Long id, @Valid @RequestBody UserRequestPatchDTO dto) {
+        log.info("Updating user with ID: {}", id);
+        UserDetailsResponse updatedUser = userService.updateUserRole(id, dto.getUserType());
+        return ResponseEntity.ok(new ResponseData<>(200, "User updated successfully", updatedUser));
+    }
+
+
 
 
 

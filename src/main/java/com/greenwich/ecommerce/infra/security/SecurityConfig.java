@@ -43,11 +43,21 @@ public class SecurityConfig {
             "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/swagger-ui/index.html"
     };
 
+    public static final String[] ADMIN_LIST = {
+            "/api/v1/users/**",
+            "/api/v1/categories/**",
+            "/api/v1/products/**",
+            "/api/v1/orders/**",
+            "/api/v1/roles/**",
+            "/api/v1/users/current/role",
+    };
+
     public static final String[] CUSTOMER_LIST = {
             "/api/v1/users/current",
             "/api/v1/users/current/**",
             "/api/v1/users/logout",
-            "/api/v1/products/{id}/rate"
+            "/api/v1/products/{id}",
+            "/api/v1/products",
     };
 
     @Bean
@@ -82,6 +92,12 @@ public class SecurityConfig {
                         }
                         for (String url : WHITE_LIST) {
                             auth.requestMatchers(url).permitAll();
+                        }
+                        for (String url : ADMIN_LIST) {
+                            auth.requestMatchers(url).hasRole("ADMIN");
+                        }
+                        for (String url : CUSTOMER_LIST) {
+                            auth.requestMatchers(url).hasRole("CUSTOMER");
                         }
                         auth.anyRequest().authenticated();
                     }

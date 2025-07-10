@@ -6,14 +6,11 @@ import com.greenwich.ecommerce.common.enums.UserType;
 import com.greenwich.ecommerce.common.mapper.UserMapper;
 import com.greenwich.ecommerce.common.util.Util;
 import com.greenwich.ecommerce.dto.request.RegisterRequestDTO;
-import com.greenwich.ecommerce.dto.request.UserRequestDTO;
+
 import com.greenwich.ecommerce.dto.response.UserDetailsResponse;
 import com.greenwich.ecommerce.entity.Role;
 import com.greenwich.ecommerce.entity.User;
-import com.greenwich.ecommerce.exception.DuplicateResourceException;
-import com.greenwich.ecommerce.exception.InvalidDataException;
-import com.greenwich.ecommerce.exception.NotFoundException;
-import com.greenwich.ecommerce.exception.ResourceNotFoundException;
+import com.greenwich.ecommerce.exception.*;
 import com.greenwich.ecommerce.repository.RoleRepository;
 import com.greenwich.ecommerce.repository.UserRepository;
 import com.greenwich.ecommerce.service.UserService;
@@ -38,11 +35,12 @@ public class UserServiceImpl implements UserService {
     private final UserMapper userMapper;
 
     @Transactional
+    @Override
     public long registerUser(RegisterRequestDTO registerRequestDTO) {
 
         if (registerRequestDTO == null) {
             log.error("Register request is null");
-            throw new InvalidDataException("Register request cannot be null");
+            throw new BadRequestException("Register request cannot be null");
         }
 
         log.info("Registering user with email: {}", registerRequestDTO.getEmail());
@@ -55,10 +53,18 @@ public class UserServiceImpl implements UserService {
         String phoneNumber = registerRequestDTO.getPhoneNumber().trim();
 
         userValidator.validateEmail(email);
+        if (userRepository.existsByEmail(email)) {
+            log.warn("Email already exists");
+            throw new DuplicateResourceException("Email is already registered");
+        }
 
         userValidator.validatePassword(password);
 
         userValidator.validateUsername(username);
+        if (userRepository.existsByUsername(username)) {
+            log.warn("Username {} is already registered", username);
+            throw new DuplicateResourceException("Username is already registered");
+        }
 
         userValidator.validateFullName(fullName);
 
@@ -99,7 +105,23 @@ public class UserServiceImpl implements UserService {
 
     }
 
-//    public Cart getUser(id) {
-//        ...../// /
-//    }
+    @Override
+    public UserDetailsResponse updateUserRole(Long userId, UserType userType) {
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("User"));
+
+        Role newRole = roleRepository.findById(2L) //hardcoded
+                .orElseThrow(() -> new ResourceNotFoundException("Role not found"));
+
+        user.setRole(newRole);
+
+        return UserDetailsResponse.builder()
+                .email(user.getEmail())
+                .username(user.getUsername())
+                .fullName(user.getFullName())
+                .phoneNumber(user.getPhone())
+                .role(newRole.getName())
+                .build();
+    }
 }

@@ -1,5 +1,7 @@
 package com.greenwich.ecommerce.entity;
 
+import com.greenwich.ecommerce.common.enums.StockStatus;
+import com.greenwich.ecommerce.common.enums.Unit;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
@@ -14,7 +16,7 @@ import java.math.BigDecimal;
 @Entity
 @Table(name = "product")
 @AttributeOverride(name = "id", column = @Column(name = "product_id"))
-public class Product extends AbstractEntity {
+public class Product extends AbstractEntity implements SoftDeletable {
 
     @ManyToOne
     @JoinColumn(name = "category_id", nullable = false)
@@ -27,7 +29,8 @@ public class Product extends AbstractEntity {
     private String description;
 
     @Column(name = "unit", nullable = false)
-    private String unit;
+    @Enumerated(EnumType.STRING)
+    private Unit unit;
 
     @Column(name = "price", nullable = false, precision = 10, scale = 2)
     private BigDecimal price;
@@ -36,7 +39,21 @@ public class Product extends AbstractEntity {
     private int stockQuantity;
 
     @Column(name = "stock_status", nullable = false)
-    private String stockStatus;
+    @Enumerated(EnumType.STRING)
+    private StockStatus stockStatus;
+
+    @Column(name = "is_deleted", nullable = false)
+    private boolean deleted = false;
+
+    @Override
+    public boolean isDeleted() {
+        return deleted;
+    }
+
+    @Override
+    public void setDeleted(boolean deleted) {
+        this.deleted = deleted;
+    }
 
 
 }

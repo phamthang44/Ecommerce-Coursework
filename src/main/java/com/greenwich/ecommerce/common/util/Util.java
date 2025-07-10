@@ -1,5 +1,7 @@
 package com.greenwich.ecommerce.common.util;
 
+import com.greenwich.ecommerce.exception.InvalidDataException;
+
 public class Util {
 
     public static String normalizePhoneNumber(String raw, String countryCode) {
@@ -45,10 +47,32 @@ public class Util {
         return email.length() >= 255; //nếu invalid thì trả về true
     }
 
+    /**
+     * Checks if a string is null or empty (empty or contains only whitespace).
+     * for java 8, use isEmpty() method.
+     * @param str the string to check
+     * @return true if the string is null or empty, false otherwise
+     */
     public static boolean isNullOrEmpty(String str) {
         return str == null || str.trim().isEmpty();
     }
 
+    public static boolean isNullOrEmpty(Object obj) {
+        return obj == null || (obj instanceof String && ((String) obj).trim().isEmpty());
+    }
 
+    /**
+     * Checks if a string is null or blank (empty or contains only whitespace).
+     * for java 11 and later, use isBlank() method.
+     * @param str the string to check
+     * @return true if the string is null or blank, false otherwise
+     */
+    public static boolean isNullOrBlank(String str) {
+        return str == null || str.isBlank();
+    }
+
+    public static int getPageNo(Integer pageNo) {
+        return pageNo > 0 ? pageNo - 1 : 0; // Convert to zero-based index
+    }
 
 }

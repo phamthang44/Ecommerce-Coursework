@@ -20,7 +20,7 @@ import java.util.Set;
 @Entity
 @Table(name = "user")
 @AttributeOverride(name = "id", column = @Column(name = "user_id"))
-public class User extends AbstractEntity {
+public class User extends AbstractEntity implements SoftDeletable {
 
     @Column(name = "full_name", nullable = false, columnDefinition = "NVARCHAR(100)", length = 100)
     private String fullName;
@@ -65,5 +65,18 @@ public class User extends AbstractEntity {
             addresses.add(address);
             address.setUser(this); // save user_id
         }
+    }
+
+    @Column(name = "is_deleted", nullable = false)
+    private boolean deleted = false;
+
+    @Override
+    public boolean isDeleted() {
+        return deleted;
+    }
+
+    @Override
+    public void setDeleted(boolean deleted) {
+        this.deleted = deleted;
     }
 }

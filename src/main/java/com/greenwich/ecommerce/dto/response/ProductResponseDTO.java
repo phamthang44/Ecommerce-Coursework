@@ -1,8 +1,11 @@
 package com.greenwich.ecommerce.dto.response;
 
 
+import com.greenwich.ecommerce.common.enums.StockStatus;
+import com.greenwich.ecommerce.common.enums.Unit;
 import lombok.*;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 
 @Getter
@@ -10,13 +13,14 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ProductResponseDTO {
+public class ProductResponseDTO implements Serializable {
 
+    private Long id;
     private String productName;
     private String productDescription;
-    private String unit;
+    private Unit unit;
     private BigDecimal price;
     private int quantity;
-    private String stockStatus;
+    private StockStatus stockStatus;
 
 }
