@@ -18,7 +18,7 @@ public class Asset extends AbstractEntity {
     @Column(name = "file_type", nullable = false)
     private String fileType;
 
-    // Nay t quen no la gi r =))
+
 //    @Column(name = "usage")
 //    private String usage;
 

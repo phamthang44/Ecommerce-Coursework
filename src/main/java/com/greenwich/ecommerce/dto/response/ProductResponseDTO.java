@@ -3,6 +3,7 @@ package com.greenwich.ecommerce.dto.response;
 
 import lombok.*;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 
 @Getter
@@ -10,7 +11,7 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ProductResponseDTO {
+public class ProductResponseDTO implements Serializable {
 
     private String productName;
     private String productDescription;

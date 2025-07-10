@@ -9,7 +9,7 @@ import java.util.List;
 @Entity
 @Table(name = "`order`")
 @AttributeOverride(name = "id", column = @Column(name = "order_id"))
-public class Order extends AbstractEntity {
+public class Order extends AbstractEntity implements SoftDeletable {
 
     @ManyToOne
     @JoinColumn(name = "user_id",nullable = false)
@@ -39,5 +39,18 @@ public class Order extends AbstractEntity {
 
     @Column(name = "discount_applied", nullable = true)
     private double discountApplied;
+
+    @Column(name = "is_deleted", nullable = false)
+    private boolean deleted = false;
+
+    @Override
+    public boolean isDeleted() {
+        return deleted;
+    }
+
+    @Override
+    public void setDeleted(boolean deleted) {
+        this.deleted = deleted;
+    }
 
 }

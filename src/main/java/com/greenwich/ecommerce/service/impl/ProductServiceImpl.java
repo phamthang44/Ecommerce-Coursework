@@ -1,5 +1,6 @@
 package com.greenwich.ecommerce.service.impl;
 
+import com.greenwich.ecommerce.common.util.Util;
 import com.greenwich.ecommerce.dto.request.ProductRequestPostDTO;
 import com.greenwich.ecommerce.dto.response.PageResponse;
 import com.greenwich.ecommerce.dto.response.ProductResponseDTO;
@@ -82,11 +83,8 @@ public class ProductServiceImpl implements ProductService {
 
 
     @Override
-    public PageResponse<Object> getAllProducts(int pageNo, int pageSize) {
-        int page = 0;
-        if (pageNo > 0) {
-            page = pageNo - 1; // Convert to zero-based index
-        }
+    public PageResponse<ProductResponseDTO> getAllProducts(int pageNo, int pageSize) {
+        int page = Util.getPageNo(pageNo); // Convert to zero-based index
 
         if (pageNo < 0 || pageSize <= 0) {
             log.error("Invalid pagination parameters: pageNo={}, pageSize={}", pageNo, pageSize);
@@ -105,10 +103,11 @@ public class ProductServiceImpl implements ProductService {
                 .unit(product.getUnit())
                 .build()).toList();
 
-        return PageResponse.builder()
+        return PageResponse.<ProductResponseDTO>builder()
                 .pageNo(pageNo)
                 .pageSize(pageSize)
                 .totalPages(products.getTotalPages())
+                .totalElements((int) products.getTotalElements())
                 .items(responses)
                 .build();
     }

@@ -33,7 +33,7 @@ public class ProductController {
         return ResponseEntity.status(HttpStatus.OK.value()).body(new ResponseData<>(HttpStatus.OK.value(), "Product found!", product));
     }
 
-    @PostMapping("/")
+    @PostMapping
     public ResponseEntity<ResponseData<ProductResponseDTO>> addProduct(@Valid @RequestBody ProductRequestPostDTO product) {
         // Logic to add a new product
         log.info("Adding new product: {}", product);
@@ -44,8 +44,8 @@ public class ProductController {
         return ResponseEntity.status(HttpStatus.CREATED.value()).body(new ResponseData<>(201, "Product added successfully!", addedProduct));
     }
 
-    @GetMapping("/list")
-    public ResponseEntity<ResponseData<PageResponse<Object>>> getAllProducts(
+    @GetMapping
+    public ResponseEntity<ResponseData<PageResponse<ProductResponseDTO>>> getAllProducts(
         @RequestParam(defaultValue = "0", required = false) int pageNo,
         @RequestParam(defaultValue = "10", required = false) int pageSize
     ) {

@@ -14,7 +14,7 @@ import java.math.BigDecimal;
 @Entity
 @Table(name = "product")
 @AttributeOverride(name = "id", column = @Column(name = "product_id"))
-public class Product extends AbstractEntity {
+public class Product extends AbstractEntity implements SoftDeletable {
 
     @ManyToOne
     @JoinColumn(name = "category_id", nullable = false)
@@ -37,6 +37,19 @@ public class Product extends AbstractEntity {
 
     @Column(name = "stock_status", nullable = false)
     private String stockStatus;
+
+    @Column(name = "is_deleted", nullable = false)
+    private boolean deleted = false;
+
+    @Override
+    public boolean isDeleted() {
+        return deleted;
+    }
+
+    @Override
+    public void setDeleted(boolean deleted) {
+        this.deleted = deleted;
+    }
 
 
 }
