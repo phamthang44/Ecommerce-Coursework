@@ -7,20 +7,24 @@ import com.greenwich.ecommerce.dto.response.ResponseData;
 import com.greenwich.ecommerce.entity.Category;
 import com.greenwich.ecommerce.service.CategoryService;
 import com.greenwich.ecommerce.service.impl.CategoryServiceImpl;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @Slf4j
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/categories")
+@Validated
+@Tag(name = "Category Management", description = "Endpoints for managing categories")
 public class CategoryController {
 
-    private final CategoryServiceImpl categoryService;
+    private final CategoryService categoryService;
 
     @GetMapping
     public ResponseEntity<PageResponse<CategoryResponseDTO>> getAllCategories(@RequestParam(defaultValue = "0", required = false) int pageNo,

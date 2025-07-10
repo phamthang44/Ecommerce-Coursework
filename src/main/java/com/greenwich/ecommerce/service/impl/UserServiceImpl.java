@@ -6,7 +6,7 @@ import com.greenwich.ecommerce.common.enums.UserType;
 import com.greenwich.ecommerce.common.mapper.UserMapper;
 import com.greenwich.ecommerce.common.util.Util;
 import com.greenwich.ecommerce.dto.request.RegisterRequestDTO;
-import com.greenwich.ecommerce.dto.request.UserRequestDTO;
+
 import com.greenwich.ecommerce.dto.response.UserDetailsResponse;
 import com.greenwich.ecommerce.entity.Role;
 import com.greenwich.ecommerce.entity.User;
@@ -105,4 +105,23 @@ public class UserServiceImpl implements UserService {
 
     }
 
+    @Override
+    public UserDetailsResponse updateUserRole(Long userId, UserType userType) {
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("User"));
+
+        Role newRole = roleRepository.findById(2L) //hardcoded
+                .orElseThrow(() -> new ResourceNotFoundException("Role not found"));
+
+        user.setRole(newRole);
+
+        return UserDetailsResponse.builder()
+                .email(user.getEmail())
+                .username(user.getUsername())
+                .fullName(user.getFullName())
+                .phoneNumber(user.getPhone())
+                .role(newRole.getName())
+                .build();
+    }
 }

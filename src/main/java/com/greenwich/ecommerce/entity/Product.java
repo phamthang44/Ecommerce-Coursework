@@ -1,5 +1,7 @@
 package com.greenwich.ecommerce.entity;
 
+import com.greenwich.ecommerce.common.enums.StockStatus;
+import com.greenwich.ecommerce.common.enums.Unit;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
@@ -27,7 +29,8 @@ public class Product extends AbstractEntity implements SoftDeletable {
     private String description;
 
     @Column(name = "unit", nullable = false)
-    private String unit;
+    @Enumerated(EnumType.STRING)
+    private Unit unit;
 
     @Column(name = "price", nullable = false, precision = 10, scale = 2)
     private BigDecimal price;
@@ -36,7 +39,8 @@ public class Product extends AbstractEntity implements SoftDeletable {
     private int stockQuantity;
 
     @Column(name = "stock_status", nullable = false)
-    private String stockStatus;
+    @Enumerated(EnumType.STRING)
+    private StockStatus stockStatus;
 
     @Column(name = "is_deleted", nullable = false)
     private boolean deleted = false;

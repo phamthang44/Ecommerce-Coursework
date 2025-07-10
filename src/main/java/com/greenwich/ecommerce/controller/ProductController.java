@@ -5,22 +5,27 @@ import com.greenwich.ecommerce.dto.request.ProductRequestPostDTO;
 import com.greenwich.ecommerce.dto.response.PageResponse;
 import com.greenwich.ecommerce.dto.response.ProductResponseDTO;
 import com.greenwich.ecommerce.dto.response.ResponseData;
+import com.greenwich.ecommerce.service.ProductService;
 import com.greenwich.ecommerce.service.impl.ProductServiceImpl;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @Slf4j
 @RequestMapping("/api/v1/products")
 @RequiredArgsConstructor
+@Validated
+@Tag(name = "Product Management", description = "Endpoints for managing products")
 public class ProductController {
 
-    private final ProductServiceImpl productService;
+    private final ProductService productService;
 
     @GetMapping("/{id}")
     public ResponseEntity<ResponseData<ProductResponseDTO>> getProductById(@Min(1) @PathVariable Long id) {
