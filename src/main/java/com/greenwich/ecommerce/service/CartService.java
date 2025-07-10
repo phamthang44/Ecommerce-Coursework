@@ -1,5 +1,6 @@
 package com.greenwich.ecommerce.service;
 
+import com.greenwich.ecommerce.dto.request.CartItemRequestDTO;
 import com.greenwich.ecommerce.dto.response.CartResponseDTO;
 
 public interface CartService{
@@ -7,5 +8,7 @@ public interface CartService{
 //
 //    CartItemRequestDTO removeFromCart(CartItemRequestDTO cartRequestDTO);
 
-    CartResponseDTO getCartByUserId(Long userId);
+//    CartResponseDTO getCartByUserId(Long userId);
+
+    CartResponseDTO addProductToCart(CartItemRequestDTO cartItemRequestDTO, Long userId);
 }

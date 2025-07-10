@@ -27,7 +27,7 @@ spring:
 
 open:
   api:
-    serverUrl: http://localhost:${server.port}
+    serverUrl: http://100.81.52.73:${server.port}
     title: ${API_TITLE:DUMMY-API-TITLE}
     version: v1.0.0
     serverName: server API for development in Scrum project

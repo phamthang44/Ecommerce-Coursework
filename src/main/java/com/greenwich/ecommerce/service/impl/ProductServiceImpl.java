@@ -6,9 +6,11 @@ import com.greenwich.ecommerce.common.util.Util;
 import com.greenwich.ecommerce.dto.request.ProductRequestPostDTO;
 import com.greenwich.ecommerce.dto.response.PageResponse;
 import com.greenwich.ecommerce.dto.response.ProductResponseDTO;
+import com.greenwich.ecommerce.entity.Category;
 import com.greenwich.ecommerce.entity.Product;
 import com.greenwich.ecommerce.exception.InvalidDataException;
 import com.greenwich.ecommerce.exception.ResourceNotFoundException;
+import com.greenwich.ecommerce.repository.CategoryRepository;
 import com.greenwich.ecommerce.repository.ProductRepository;
 import com.greenwich.ecommerce.service.ProductService;
 import jakarta.transaction.Transactional;
@@ -29,7 +31,7 @@ import java.util.List;
 public class ProductServiceImpl implements ProductService {
 
     private final ProductRepository productRepository;
-
+    private final CategoryRepository categoryRepository;
 
     @Override
     public ProductResponseDTO getProductById(Long productId) {
@@ -68,11 +70,16 @@ public class ProductServiceImpl implements ProductService {
 
         StockStatus stockStatus = dto.getStockStatus() != StockStatus.IN_STOCK ? dto.getStockStatus() : StockStatus.IN_STOCK;
         Unit unit = dto.getUnit() != Unit.PIECE ? dto.getUnit() : Unit.PIECE;
-
+        Category category = categoryRepository.findById(dto.getCategoryId()).orElse(null);
+        if (category == null) {
+            log.error("Category not found with id: {}", dto.getCategoryId());
+            throw new ResourceNotFoundException("Category not found with id: " + dto.getCategoryId());
+        }
         Product product = Product.builder()
                 .name(dto.getProductName())
                 .description(dto.getDescription())
                 .unit(unit)
+                .category(category)
                 .stockQuantity(dto.getQuantity())
                 .stockStatus(stockStatus)
                 .price(dto.getPrice())
@@ -85,6 +92,7 @@ public class ProductServiceImpl implements ProductService {
                 .productName(product.getName())
                 .productDescription(product.getDescription())
                 .price(product.getPrice())
+                .productType(category.getName())
                 .stockStatus(product.getStockStatus())
                 .quantity(product.getStockQuantity())
                 .unit(product.getUnit())
@@ -93,7 +101,7 @@ public class ProductServiceImpl implements ProductService {
 
 
     @Override
-    public PageResponse<ProductResponseDTO> getAllProducts(int pageNo, int pageSize) {
+    public PageResponse<ProductResponseDTO> getAllProductsWithPage(int pageNo, int pageSize) {
         int page = Util.getPageNo(pageNo); // Convert to zero-based index
 
         if (pageNo < 0 || pageSize <= 0) {
@@ -108,6 +116,7 @@ public class ProductServiceImpl implements ProductService {
                 .id(product.getId())
                 .productName(product.getName())
                 .productDescription(product.getDescription())
+                .productType(product.getCategory() != null ? product.getCategory().getName() : "Unknown")
                 .price(product.getPrice())
                 .stockStatus(product.getStockStatus())
                 .quantity(product.getStockQuantity())
@@ -121,5 +130,19 @@ public class ProductServiceImpl implements ProductService {
                 .totalElements((int) products.getTotalElements())
                 .items(responses)
                 .build();
+    }
+
+    public List<ProductResponseDTO> getAllProducts() {
+        List<Product> products = productRepository.findAllByDeletedFalse();
+        return products.stream().map(product -> ProductResponseDTO.builder()
+                .id(product.getId())
+                .productName(product.getName())
+                .productDescription(product.getDescription())
+                .productType(product.getCategory() != null ? product.getCategory().getName() : "Unknown")
+                .price(product.getPrice())
+                .stockStatus(product.getStockStatus())
+                .quantity(product.getStockQuantity())
+                .unit(product.getUnit())
+                .build()).toList();
     }
 }

@@ -4,7 +4,6 @@ import com.greenwich.ecommerce.common.enums.Gender;
 import com.greenwich.ecommerce.common.enums.UserStatus;
 import com.greenwich.ecommerce.common.enums.UserType;
 import com.greenwich.ecommerce.common.mapper.UserMapper;
-import com.greenwich.ecommerce.common.util.Util;
 import com.greenwich.ecommerce.dto.request.RegisterRequestDTO;
 
 import com.greenwich.ecommerce.dto.response.UserDetailsResponse;

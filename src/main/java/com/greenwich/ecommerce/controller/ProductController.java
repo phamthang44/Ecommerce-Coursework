@@ -17,6 +17,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @Slf4j
 @RequestMapping("/api/v1/products")
@@ -50,14 +52,20 @@ public class ProductController {
     }
 
     @GetMapping
-    public ResponseEntity<ResponseData<PageResponse<ProductResponseDTO>>> getAllProducts(
+    public ResponseEntity<ResponseData<PageResponse<ProductResponseDTO>>> getAllProductsWithPage(
         @RequestParam(defaultValue = "0", required = false) int pageNo,
         @RequestParam(defaultValue = "10", required = false) int pageSize
     ) {
         log.info("Request get all products with pageNo: {}, pageSize: {}", pageNo, pageSize);
 
-        return ResponseEntity.status(HttpStatus.OK.value()).body(new ResponseData<>(HttpStatus.OK.value(), "Product list", productService.getAllProducts(pageNo, pageSize)));
+        return ResponseEntity.status(HttpStatus.OK.value()).body(new ResponseData<>(HttpStatus.OK.value(), "Product list", productService.getAllProductsWithPage(pageNo, pageSize)));
     }
 
+    @GetMapping("/all")
+    public ResponseEntity<ResponseData<List<ProductResponseDTO>>> getAllProducts() {
+        log.info("Request get all products without pagination");
+
+        return ResponseEntity.status(HttpStatus.OK.value()).body(new ResponseData<>(HttpStatus.OK.value(), "Product list", productService.getAllProducts()));
+    }
 
 }
