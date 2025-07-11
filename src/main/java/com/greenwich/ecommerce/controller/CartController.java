@@ -6,6 +6,7 @@ import com.greenwich.ecommerce.dto.response.ProductResponseDTO;
 import com.greenwich.ecommerce.dto.response.ResponseData;
 import com.greenwich.ecommerce.infra.security.SecurityUserDetails;
 import com.greenwich.ecommerce.service.impl.CartServiceImpl;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +21,7 @@ public class CartController {
     private final CartServiceImpl cartService;
 
     // get the cart of the user
+    @Operation(method= "GET", summary="Get cart info", description="This API allows you to view cart")
     @GetMapping("/{id}")
     public ResponseEntity<ResponseData<CartResponseDTO>> getCart(@PathVariable Long id) {
         // fetch cart id
@@ -31,7 +33,7 @@ public class CartController {
         return ResponseEntity.status(200).body(new ResponseData<>(200, "Cart found!", cart));
     }
 
-
+    @Operation(method= "POST", summary="Add product to cart (and increase product quantity)", description="This API allows you to a product into your cart (and increase product quantity)")
     @PostMapping("/items")
     public ResponseEntity<ResponseData<CartResponseDTO>> addToCart(@RequestBody CartItemRequestDTO item,
                                                                    @AuthenticationPrincipal SecurityUserDetails user
@@ -43,12 +45,15 @@ public class CartController {
         return ResponseEntity.status(201).body(new ResponseData<>(201, "Product added to cart successfully!", addedProduct));
     }
 
+//    Change quantity -1
+    @Operation(method= "PUT", summary="Reduce product quantity in cart", description="This API allows you to reduce product quantity in cart")
+    @PutMapping("/items")
+    public ResponseEntity<ResponseData<CartResponseDTO>> updateCart(@RequestBody CartItemRequestDTO item,
+                                                                    @AuthenticationPrincipal SecurityUserDetails user
+                                                                   ) {
+        log.info("Updating (reduce product quantity) product id in cart: {}", item.getProductId());
+        CartResponseDTO updatedProduct = cartService.changeCartItemQuantity(item, user.getId());
 
-
+        return ResponseEntity.status(200).body(new ResponseData<>(200, "Product reduce quantity in cart successfully!", updatedProduct));
+    }
 }
-// show cart voi cart Item
-// Can cartItem de lam kh hay lam duoc luon??
-//    @PostMapping("/list")
-//    public ResponseEntity<ResponseData<ProductResponseDTO>> addToCart(@RequestBody ProductResponseDTO product) {
-//
-//    }

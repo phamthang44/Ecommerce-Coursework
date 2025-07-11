@@ -43,6 +43,7 @@ public class CartServiceImpl implements CartService {
         int quantity = cartItemRequestDTO.getQuantity();
         log.info("Adding product with id {} to cart for user {}", productId, userId);
         Cart cart = cartRepository.getByUserId(userId);
+        // Cai nay viet do, mot
         if (cart == null) {
             log.error("Cart not found for user id: {}", userId);
             //means the user does not have a cart yet, so we create a new one
@@ -121,13 +122,8 @@ public class CartServiceImpl implements CartService {
 
         Cart cart = cartRepository.getByUserId(userId);
 
-//        if (cart == null) {
-//            log.error("Cart not found with id: {}", userId);
-//            throw new ResourceNotFoundException("Cart not found with id: " + userId);
-//        }
-
         if (cart == null) {
-            log.error("Cart not found for user id: {}", userId);
+            log.error("Cart not found in get cart by user for user id: {}", userId);
             //means the user does not have a cart yet, so we create a new one
             cart = createCart(userId);
         }
@@ -149,79 +145,63 @@ public class CartServiceImpl implements CartService {
                 .build();
 
     }
+
+    public CartResponseDTO changeCartItemQuantity(CartItemRequestDTO cartItemRequestDTO, Long userId) {
+        if (userId == null) {
+            log.error("User id in update quantity is null");
+            throw new InvalidDataException("User id is null");
+        }
+
+        if (userId <= 0) {
+            log.error("User id in update quantity is negative");
+            throw new InvalidParameterException("User id in update must be greater than zero");
+        }
+
+        Cart cart = cartRepository.getByUserId(userId);
+
+        if (cart == null) {
+            log.error("Cart in update quantity not found for user id: {}", userId);
+            //means the user does not have a cart yet, so we create a new one
+            cart = createCart(userId);
+        }
+
+        Long productId = cartItemRequestDTO.getProductId();
+        if (productId == null || productId <= 0) {
+            log.error("Invalid product id in update quantity: {}", productId);
+            throw new InvalidParameterException("Product id in update quantity must be greater than zero");
+        }
+
+        int quantity = cartItemRequestDTO.getQuantity();
+        log.info("Updating product with id {} in cart for user {} to quantity {}", productId, userId, quantity);
+
+
+        Optional<CartItem> existingCartItem = cart.getCartItems().stream()
+                .filter(item -> item.getProduct().getId().equals(productId))
+                .findFirst();
+
+        if (existingCartItem.isPresent()) {
+            existingCartItem.ifPresent(cartItem -> {
+                Category category = categoryRepository.findById(3L).orElseThrow(() -> new ResourceNotFoundException("Category not found"));
+                cartItem.setProduct(productRepository.getProductById(productId));
+                cartItem.setItemType(category);
+                cartItem.setQuantity(cartItem.getQuantity() - quantity);
+                cartItemRepository.save(cartItem);
+            });
+            log.info("Product with id {} changed quantity -1 to {}", productId, quantity);
+        }
+
+        Cart savedCart = cartRepository.save(cart);
+        CartResponseDTO cartResponseDTO = new CartResponseDTO();
+        cartResponseDTO.setCartItems(savedCart.getCartItems().stream()
+                .map(cartItem -> CartItemResponseDTO.builder()
+                        .name(cartItem.getProduct().getName())
+                        .quantity(cartItem.getQuantity())
+                        .price(cartItem.getProduct().getPrice())
+                        .build())
+                .toList());
+        cartResponseDTO.setTotalPrice(savedCart.getTotalPrice());
+
+        return cartResponseDTO;
+
+    }
 }
-
-
-//        CartResponseDTO cartResponseDTO = new CartResponseDTO();
-//        cart.getCartItems().stream().filter(item -> item.getProduct().getId().equals(productId)).findFirst().ifPresent(item -> {
-//            item.setQuantity(item.getQuantity() + quantity);
-//            cartItemRepository.save(item);
-//
-//
-//            List<CartItem> cartItems = cart.getCartItems();
-//
-//            cartResponseDTO.setCartItems(cartItems.stream()
-//                    .map(cartItem -> CartItemResponseDTO.builder()
-//                            .name(cartItem.getProduct().getName())
-//                            .quantity(cartItem.getQuantity())
-//                            .price(cartItem.getProduct().getPrice())
-//                            .build())
-//                    .toList());
-//
-//
-//            cartResponseDTO.setTotalPrice(cart.getTotalPrice());
-//        });
-
-
-//        cart.getCartItems().stream().filter(item -> item.getProduct().getId().equals(productId)).findFirst()
-//                .ifPresentOrElse(cartItem -> {
-//                    cartItem.setQuantity(cartItem.getQuantity() + quantity);
-//                    cartItemRepository.save(cartItem);
-//                }, () -> {
-//                    Product product = productRepository.getProductById(productId);
-//                    if (product == null) {
-//                        throw new ResourceNotFoundException("Product not found with id: " + productId);
-//                    }
-//                    CartItem newCartItem = new CartItem(cart, product.getCategory(), product, quantity);
-//                    cartItemRepository.save(newCartItem);
-//                    cart.getCartItems().add(newCartItem);
-//                });
-//        ))
-//
-
-//    public CartResponseDTO createCart(CartItemRequestDTO cartItemRequestDTO) {
-//        Cart cart = Cart.builder()
-//                .user(cartItemRequestDTO.getUserId())
-//                .cartItems(cartItemRequestDTO.getCartItems())
-//                .status("Simulating")
-//                .totalPrice(cartItemRequestDTO.getTotalPrice())
-//                .build();
-//
-//        cartRepository.save(cart);
-//
-//        return CartResponseDTO.builder()
-//                .cartItems(cart.getCartItems())
-//
-//                .totalPrice(cart.getTotalPrice())
-//                .build();
-//    }
-
-//    public CartItemResponseDTO createCartItem(CartItemRequestDTO cartItemRequestDTO) {
-//        Long productId = cartItemRequestDTO.getProductId();
-//
-//        Product product = productRepository.getProductById(productId);
-//
-//        Cart cart = cartRepository.getById(cartItemRequestDTO.getCartId());
-//
-//        String name = product.getName();
-//        int quantity = 1;
-//
-//        CartItem item = new CartItem(cart,product.getCategory(),product,quantity);
-//
-//        CartItem newItem = cartItemRepository.save(item);
-//
-//        return CartItemResponseDTO.builder()
-//                .name(newItem.getProduct().getName())
-//                .quantity(newItem.getQuantity())
-//                .build();
-//    }
