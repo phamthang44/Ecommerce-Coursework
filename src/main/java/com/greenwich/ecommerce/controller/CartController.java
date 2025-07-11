@@ -5,6 +5,7 @@ import com.greenwich.ecommerce.dto.response.CartResponseDTO;
 import com.greenwich.ecommerce.dto.response.ProductResponseDTO;
 import com.greenwich.ecommerce.dto.response.ResponseData;
 import com.greenwich.ecommerce.infra.security.SecurityUserDetails;
+import com.greenwich.ecommerce.service.CartService;
 import com.greenwich.ecommerce.service.impl.CartServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
@@ -18,17 +19,18 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/cart")
 @RequiredArgsConstructor
 public class CartController {
-    private final CartServiceImpl cartService;
+    private final CartService cartService;
 
     // get the cart of the user
-    @Operation(method= "GET", summary="Get cart info", description="This API allows you to view cart")
-    @GetMapping("/{id}")
-    public ResponseEntity<ResponseData<CartResponseDTO>> getCart(@PathVariable Long id) {
-        // fetch cart id
-        log.info("get cart by id {}", id);
+    @Operation(method= "GET", summary="Get cart info", description="This API allows you to view cart, just need to call this API will return the cart of the user")
+    @GetMapping
+    public ResponseEntity<ResponseData<CartResponseDTO>> getCart(@AuthenticationPrincipal SecurityUserDetails user) {
 
-        // Thieu service method
-        CartResponseDTO cart = cartService.getCartByUserId(id);
+        Long userId = user.getId();
+
+        log.info("get cart by id {}", userId);
+
+        CartResponseDTO cart = cartService.getCartByUserId(userId);
 
         return ResponseEntity.status(200).body(new ResponseData<>(200, "Cart found!", cart));
     }

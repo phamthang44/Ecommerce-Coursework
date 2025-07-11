@@ -15,6 +15,6 @@ public class CartItemResponseDTO {
     private String name;
     private int quantity;
     private BigDecimal price;
-    private BigDecimal totalPrice;
+    private BigDecimal subTotalPrice;
 
 }

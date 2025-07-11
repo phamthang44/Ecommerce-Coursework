@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/categories")
 @Validated
-@Tag(name = "Category Management", description = "Endpoints for managing categories")
+@Tag(name = "Category Management", description = "Endpoints for managing categories (ADMIN ROLE). Do not use this API for CUSTOMER ROLE so the Frontend will not need to implement this API")
 public class CategoryController {
 
     private final CategoryService categoryService;
@@ -59,10 +59,11 @@ public class CategoryController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ResponseData<Void>> deleteCategory(@PathVariable("id") @Min(1) Long id) {
+    public ResponseEntity<ResponseData<?>> deleteCategory(@PathVariable("id") @Min(1) Long id) {
         log.info("Deleting category with id: {}", id);
         categoryService.deleteCategory(id);
-        return ResponseEntity.status(HttpStatus.NO_CONTENT.value()).body(new ResponseData<>(HttpStatus.NO_CONTENT.value(), "Category deleted successfully", null));
+
+        return ResponseEntity.status(200).body(new ResponseData<>(HttpStatus.OK.value(), "Category deleted successfully"));
     }
 
 }
