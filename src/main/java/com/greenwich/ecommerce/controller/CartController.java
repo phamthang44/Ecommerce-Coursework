@@ -19,17 +19,17 @@ import org.springframework.web.bind.annotation.*;
 public class CartController {
     private final CartServiceImpl cartService;
 
-//    // get the cart of the user
-//    @GetMapping("/{id}")
-//    public ResponseEntity<ResponseData<CartResponseDTO>> getCart(@PathVariable Long id) {
-//        // fetch cart id
-//        log.info("get cart by id {}", id);
-//
-//        // Thieu service method
-//        CartResponseDTO cart = cartService.getCartByUserId(id);
-//
-//        return ResponseEntity.status(200).body(new ResponseData<>(200, "Cart found!", cart));
-//    }
+    // get the cart of the user
+    @GetMapping("/{id}")
+    public ResponseEntity<ResponseData<CartResponseDTO>> getCart(@PathVariable Long id) {
+        // fetch cart id
+        log.info("get cart by id {}", id);
+
+        // Thieu service method
+        CartResponseDTO cart = cartService.getCartByUserId(id);
+
+        return ResponseEntity.status(200).body(new ResponseData<>(200, "Cart found!", cart));
+    }
 
 
     @PostMapping("/items")

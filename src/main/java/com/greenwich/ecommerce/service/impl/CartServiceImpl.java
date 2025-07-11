@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.security.InvalidParameterException;
 import java.util.List;
 import java.util.Optional;
@@ -54,6 +55,9 @@ public class CartServiceImpl implements CartService {
 
         if (existingCartItem.isPresent()) {
             existingCartItem.ifPresent(cartItem -> {
+                Category category = categoryRepository.findById(3L).orElseThrow(() -> new ResourceNotFoundException("Category not found"));
+                cartItem.setProduct(productRepository.getProductById(productId));
+                cartItem.setItemType(category);
                 cartItem.setQuantity(cartItem.getQuantity() + quantity);
                 cartItemRepository.save(cartItem);
             });
@@ -103,6 +107,48 @@ public class CartServiceImpl implements CartService {
         cart.setStatus("Active");
         return cartRepository.save(cart);
     }
+
+    public CartResponseDTO getCartByUserId(Long userId) {
+        if (userId == null) {
+            log.error("User id is null");
+            throw new InvalidDataException("User id is null");
+        }
+
+        if (userId <= 0) {
+            log.error("User id is negative");
+            throw new InvalidParameterException("User id must be greater than zero");
+        }
+
+        Cart cart = cartRepository.getByUserId(userId);
+
+//        if (cart == null) {
+//            log.error("Cart not found with id: {}", userId);
+//            throw new ResourceNotFoundException("Cart not found with id: " + userId);
+//        }
+
+        if (cart == null) {
+            log.error("Cart not found for user id: {}", userId);
+            //means the user does not have a cart yet, so we create a new one
+            cart = createCart(userId);
+        }
+
+        return CartResponseDTO.builder()
+                .cartItems(
+                        cart.getCartItems().stream()
+                                .map(item -> CartItemResponseDTO.builder()
+                                        .productId(item.getProduct().getId())
+                                        .name(item.getProduct().getName())
+                                        .quantity(item.getQuantity())
+                                        .price(item.getProduct().getPrice())
+                                        .totalPrice(item.getProduct().getPrice().multiply(BigDecimal.valueOf(item.getQuantity()))) // logic nay ben FE tu su ly hay sao
+                                        .build()
+                                )
+                                .toList()
+                )
+                .totalPrice(cart.getTotalPrice())
+                .build();
+
+    }
 }
 
 
@@ -142,33 +188,6 @@ public class CartServiceImpl implements CartService {
 //                });
 //        ))
 //
-
-
-
-//    @Override
-//    public CartResponseDTO getCartByUserId(Long userId) {
-//        if (userId == null) {
-//            log.error("User id is null");
-//            throw new InvalidDataException("User id is null");
-//        }
-//
-//        if (userId <= 0) {
-//            log.error("User id is negative");
-//            throw new InvalidParameterException("User id must be greater than zero");
-//        }
-//
-//        Cart cart = cartRepository.getByUserId(userId);
-//
-//        if (cart == null) {
-//            log.error("Cart not found with id: {}", userId);
-//            throw new ResourceNotFoundException("Cart not found with id: " + userId);
-//        }
-//        return CartResponseDTO.builder()
-//                .cartItems(cart.getCartItems())
-//
-//                .totalPrice(cart.getTotalPrice())
-//                .build();
-//    }
 
 //    public CartResponseDTO createCart(CartItemRequestDTO cartItemRequestDTO) {
 //        Cart cart = Cart.builder()

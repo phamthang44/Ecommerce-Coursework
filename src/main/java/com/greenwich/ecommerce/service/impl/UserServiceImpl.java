@@ -115,6 +115,8 @@ public class UserServiceImpl implements UserService {
 
         user.setRole(newRole);
 
+        userRepository.save(user);
+
         return UserDetailsResponse.builder()
                 .email(user.getEmail())
                 .username(user.getUsername())
