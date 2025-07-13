@@ -95,7 +95,7 @@ public class SecurityConfig {
                     auth.requestMatchers(WHITE_LIST).permitAll();
 
                     auth.requestMatchers(HttpMethod.GET, "/error").permitAll();
-                    auth.requestMatchers(HttpMethod.GET, "/api/v1/products").permitAll();
+                    auth.requestMatchers(HttpMethod.GET, "/api/v1/products").hasAnyRole("CUSTOMER", "ADMIN");
                     auth.requestMatchers(HttpMethod.GET, "/api/v1/products/{id}").hasAnyRole("CUSTOMER", "ADMIN");
                     auth.requestMatchers(HttpMethod.GET, "/api/v1/users/current").hasAnyRole("CUSTOMER", "ADMIN");
                     auth.requestMatchers(HttpMethod.PUT,"/api/v1/users/current/**").hasAnyRole("CUSTOMER", "ADMIN");

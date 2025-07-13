@@ -58,7 +58,7 @@ public class ProductController {
     @GetMapping
     @Operation(method= "GET", summary="Get list of product with page", description="This API endpoint allows you to view a paginated list of products.")
     public ResponseEntity<ResponseData<PageResponse<ProductResponseDTO>>> getAllProductsWithPage(
-        @RequestParam(defaultValue = "0", required = false) int pageNo,
+        @RequestParam(defaultValue = "1", required = false) int pageNo,
         @RequestParam(defaultValue = "10", required = false) int pageSize
     ) {
         log.info("Get products in controller : Request get all products with pageNo: {}, pageSize: {}", pageNo, pageSize);

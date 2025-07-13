@@ -27,7 +27,7 @@ spring:
 
 open:
   api:
-    serverUrl: http://26.16.186.88:${server.port}
+    serverUrl: http://${RADMIN_IP}:${server.port}
     title: API Service for Production Environment
     version: v1.0.0
     serverName: server production
