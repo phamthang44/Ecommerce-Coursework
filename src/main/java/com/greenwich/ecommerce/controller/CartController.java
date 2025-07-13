@@ -57,7 +57,14 @@ public class CartController {
         log.info("Updating (reduce product quantity) product id in cart: {}", item.getCartItemId());
         CartResponseDTO updatedProduct = cartService.changeCartItemQuantity(item, user.getId());
 
-        return ResponseEntity.status(200).body(new ResponseData<>(200, "Product reduce quantity in cart successfully!", updatedProduct));
+        String message;
+        if (item.getQuantity() >= updatedProduct.getCartItems().size()) {
+            message = "Item quantity has been reduced.";
+        } else {
+            message = "Item quantity has been increased.";
+        }
+
+        return ResponseEntity.status(200).body(new ResponseData<>(200, message, updatedProduct));
     }
 
 //    @DeleteMapping("/items/{productId}")
@@ -76,7 +83,13 @@ public class CartController {
         log.info("Deleting cart item with ID {} for user {}", cartItemId, user.getId());
         CartResponseDTO updatedCart = cartService.removeCartItemFromCart(cartItemId, user.getId());
 
-        return ResponseEntity.status(200).body(new ResponseData<>(200, "Cart item deleted successfully!", updatedCart));
+        String message = "Cart item deleted successfully!";
+
+        if (updatedCart.getCartItems().isEmpty()) {
+            message = "Your cart is empty.";
+        }
+
+        return ResponseEntity.status(200).body(new ResponseData<>(200, message, updatedCart));
     }
 
     @DeleteMapping
@@ -84,7 +97,13 @@ public class CartController {
     public ResponseEntity<ResponseData<CartResponseDTO>> clearCart(@AuthenticationPrincipal SecurityUserDetails user) {
         log.info("Clearing cart for user {}", user.getId());
         CartResponseDTO clearedCart = cartService.removeAllItemsFromCart(user.getId());
-        return ResponseEntity.status(200).body(new ResponseData<>(200, "Cart cleared successfully!", clearedCart));
+
+        String message = "Cart cleared successfully!";
+        if (clearedCart.getCartItems().isEmpty()) {
+            message = "Your cart is empty.";
+        }
+
+        return ResponseEntity.status(200).body(new ResponseData<>(200, message, clearedCart));
 
     }
 
@@ -94,7 +113,7 @@ public class CartController {
                                                                         @AuthenticationPrincipal SecurityUserDetails user) {
         log.info("Deleting cart item with product id {} for user {}", item, user.getId());
         CartResponseDTO updatedCart = cartService.removeCartItemsFromCart(item, user.getId());
-        return ResponseEntity.status(200).body(new ResponseData<>(200, "Cart item deleted successfully!", updatedCart));
+        return ResponseEntity.status(200).body(new ResponseData<>(200, "Cart items deleted successfully!", updatedCart));
     }
 
 }
