@@ -4,7 +4,6 @@ import com.greenwich.ecommerce.common.enums.Gender;
 import com.greenwich.ecommerce.common.enums.UserStatus;
 import com.greenwich.ecommerce.common.enums.UserType;
 import com.greenwich.ecommerce.common.mapper.UserMapper;
-import com.greenwich.ecommerce.common.util.Util;
 import com.greenwich.ecommerce.dto.request.RegisterRequestDTO;
 
 import com.greenwich.ecommerce.dto.response.UserDetailsResponse;
@@ -85,6 +84,10 @@ public class UserServiceImpl implements UserService {
         user.setStatus(UserStatus.ACTIVE);
         user.saveAddress(null);
         user.setGender(gender);
+
+        log.info("Phone number: {}", user.getPhone());
+        user.setPhone(phoneNumber);
+        log.info("Phone number: {}", user.getPhone());
         user.setDateOfBirth(dateOfBirth);
         return userRepository.save(user).getId();
 
@@ -115,6 +118,7 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new ResourceNotFoundException("Role not found"));
 
         user.setRole(newRole);
+        userRepository.save(user);
 
         return UserDetailsResponse.builder()
                 .email(user.getEmail())
@@ -122,6 +126,23 @@ public class UserServiceImpl implements UserService {
                 .fullName(user.getFullName())
                 .phoneNumber(user.getPhone())
                 .role(newRole.getName())
+                .build();
+    }
+
+    @Override
+    public UserDetailsResponse getCurrentUser(Long userId) {
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("User not found with id: " + userId));
+
+        return UserDetailsResponse.builder()
+                .id(user.getId())
+                .address(user.getAddresses().toString())
+                .email(user.getEmail())
+                .username(user.getUsername())
+                .fullName(user.getFullName())
+                .phoneNumber(user.getPhone())
+                .role(user.getRole().getName())
                 .build();
     }
 }

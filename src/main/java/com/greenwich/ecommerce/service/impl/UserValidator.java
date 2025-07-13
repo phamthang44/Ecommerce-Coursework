@@ -62,10 +62,10 @@ public class UserValidator {
             log.error("Phone number cannot be null or empty");
             throw new InvalidDataException("Phone number is required");
         }
-        if (Util.isInvalidPhoneNumberFormat(phoneNumber)) {
-            log.error("Invalid phone number format: {}", phoneNumber);
-            throw new InvalidDataException("Invalid phone number format - must be 10 digits");
-        }
+//        if (Util.isInvalidPhoneNumberFormat(phoneNumber)) {
+//            log.error("Invalid phone number format: {}", phoneNumber);
+//            throw new InvalidDataException("Invalid phone number format - must be 10 digits");
+//        }
     }
 
 }

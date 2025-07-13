@@ -44,7 +44,7 @@ public class CategoryServiceImpl implements CategoryService {
         }
 
         String categoryName = categoryRequestDTO.getCategoryName().trim();
-        String categoryDescription = categoryRequestDTO.getCategoryDescription();
+        String categoryDescription = categoryRequestDTO.getCategoryDescription().trim();
 
         log.info ("Creating category with name: {}", categoryName);
         log.info ("Creating category with description: {}", categoryDescription);

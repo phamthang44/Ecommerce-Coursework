@@ -4,6 +4,7 @@ import com.greenwich.ecommerce.dto.request.UserRequestPatchDTO;
 import com.greenwich.ecommerce.dto.response.ResponseData;
 
 import com.greenwich.ecommerce.dto.response.UserDetailsResponse;
+import com.greenwich.ecommerce.infra.security.SecurityUserDetails;
 import com.greenwich.ecommerce.service.UserService;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -11,6 +12,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -32,7 +34,15 @@ public class UserController {
         return ResponseEntity.ok(new ResponseData<>(200, "User updated successfully", updatedUser));
     }
 
+    @GetMapping("/current")
+    public ResponseEntity<ResponseData<UserDetailsResponse>> getCurrentUser(@AuthenticationPrincipal SecurityUserDetails user) {
+        log.info("Fetching current user details");
 
+        Long userId = user.getId();
+
+        UserDetailsResponse currentUser = userService.getCurrentUser(userId);
+        return ResponseEntity.ok(new ResponseData<>(200, "Current user details fetched successfully", currentUser));
+    }
 
 
 

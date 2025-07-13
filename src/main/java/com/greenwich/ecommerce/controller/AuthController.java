@@ -5,9 +5,11 @@ import com.greenwich.ecommerce.dto.request.RegisterRequestDTO;
 import com.greenwich.ecommerce.dto.response.LoginResponse;
 import com.greenwich.ecommerce.dto.response.ResponseData;
 import com.greenwich.ecommerce.dto.response.ResponseError;
+import com.greenwich.ecommerce.infra.security.SecurityUserDetails;
 import com.greenwich.ecommerce.service.UserService;
 import com.greenwich.ecommerce.service.impl.JwtTokenService;
 import com.greenwich.ecommerce.service.impl.UserDetailsServiceImpl;
+import com.greenwich.ecommerce.service.impl.UserServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -33,8 +35,8 @@ public class AuthController {
 
     private final AuthenticationManager authenticationManager;
     private final JwtTokenService jwtTokenService;
-    private final UserService userService;
-    private final UserDetailsServiceImpl userDetailsService;
+    private final UserServiceImpl userService;
+//    private final UserDetailsServiceImpl userDetailsService;
 
 
     @Operation(method= "POST", summary="Login account", description="This API allows you to check login response")
@@ -45,7 +47,7 @@ public class AuthController {
                 new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
         );
 
-        UserDetails userDetails = (UserDetails) auth.getPrincipal();
+        SecurityUserDetails userDetails = (SecurityUserDetails) auth.getPrincipal();
 
         String token = jwtTokenService.generateToken(userDetails);
 

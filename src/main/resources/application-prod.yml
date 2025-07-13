@@ -1,7 +1,7 @@
 spring:
   config:
     activate:
-      on-profile: dev
+      on-profile: prod
   datasource:
     url: ${MYSQL_URL:jdbc:mysql://localhost:3306/ecommerce_db}
     username: ${MYSQL_USER:root}
@@ -10,7 +10,7 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQLDialect
-    show_sql: true
+    show_sql: false
     hibernate:
       ddl-auto: none
   flyway:
@@ -27,16 +27,11 @@ spring:
 
 open:
   api:
-    serverUrl: http://localhost:${server.port}
-    title: ${API_TITLE:DUMMY-API-TITLE}
+    serverUrl: http://${RADMIN_IP}:${server.port}
+    title: API Service for Production Environment
     version: v1.0.0
-    serverName: server API for development in Scrum project
-    description: Description of API Service
-
-
-logging:
-  level:
-    org.hibernate.orm.jdbc.bind: trace
+    serverName: server production
+    description: Description of API Service in production environment
 
 # Swagger (springdoc-openapi)
 springdoc:

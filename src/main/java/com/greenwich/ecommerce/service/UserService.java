@@ -10,7 +10,7 @@ public interface UserService {
     long registerUser(RegisterRequestDTO registerRequestDTO);
     UserDetailsResponse getUserDetailsByEmail(String email);
 //    String findExistingUserByUserName(String username);
-
+    UserDetailsResponse getCurrentUser(Long userId);
     UserDetailsResponse updateUserRole(Long userId, UserType userType);
 
 }

@@ -13,14 +13,14 @@ import lombok.*;
 @AttributeOverride(name = "id", column = @Column(name = "cart_item_id"))
 public class CartItem extends AbstractEntity {
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cart_id", nullable = false)
     private Cart cart;
 
 //    @Column(name = "item_type", nullable = false)
     @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "item_type", nullable = false)
-    private Category itemType;
+    @JoinColumn(name = "item_type")
+    private Category category;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "item_id", nullable = false)
