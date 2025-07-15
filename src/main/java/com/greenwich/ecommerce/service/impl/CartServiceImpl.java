@@ -33,6 +33,7 @@ public class CartServiceImpl implements CartService {
     private final CartItemRepository cartItemRepository;
     private final UserRepository userRepository;
     private final CartServiceValidator cartServiceValidator;
+    private final AssetService assetService;
 
     @Override
     @Transactional
@@ -92,11 +93,22 @@ public class CartServiceImpl implements CartService {
                         .quantity(cartItem.getQuantity())
                         .price(cartItem.getProduct().getPrice())
                         .subTotalPrice(cartItem.getProduct().getPrice().multiply(BigDecimal.valueOf(cartItem.getQuantity())))
+                        .assetUrl(getCartItemAssetUrl(cartItem))
                         .build())
                 .toList());
         cartResponseDTO.setTotalPrice(cart.getTotalPrice());
 
         return cartResponseDTO;
+    }
+
+    private String getCartItemAssetUrl(CartItem cartItem) {
+        if (cartItem.getProduct() != null && cartItem.getProduct().getAssets() != null && !cartItem.getProduct().getAssets().isEmpty()) {
+
+            Asset asset = assetService.getAssetByUsageId(cartItem.getProduct().getId());
+
+            return asset.getUrl();
+        }
+        return null; // or a default image URL
     }
 
     private CartItem findCartItemByProduct(Cart cart, Long productId) {
@@ -189,6 +201,7 @@ public class CartServiceImpl implements CartService {
         }
         log.info("Removing cart item:  with id {} from cart for user {}", cartItemId, userId);
         Cart cart = cartItem.getCart();
+        cartItem.setCategory(null);
         cart.getCartItems().remove(cartItem);
 
         Cart updatedCart = cartRepository.findByUserIdWithItems(userId) // Fetch the cart again to ensure it is up-to-date

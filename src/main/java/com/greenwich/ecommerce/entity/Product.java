@@ -1,5 +1,6 @@
 package com.greenwich.ecommerce.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.greenwich.ecommerce.common.enums.StockStatus;
 import com.greenwich.ecommerce.common.enums.Unit;
 import jakarta.persistence.*;
@@ -7,6 +8,8 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Setter
@@ -44,6 +47,10 @@ public class Product extends AbstractEntity implements SoftDeletable {
 
     @Column(name = "is_deleted", nullable = false)
     private boolean deleted = false;
+
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private List<Asset> assets = new ArrayList<>();
 
     @Override
     public boolean isDeleted() {

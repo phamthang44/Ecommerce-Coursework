@@ -25,6 +25,11 @@ spring:
       schema-locations:
         - classpath:init_db.sql
 
+cloudinary:
+  cloudName: ${CLOUDINARY_CLOUD_NAME}
+  apiKey: ${CLOUDINARY_API_KEY}
+  apiSecret: ${CLOUDINARY_API_SECRET}
+
 open:
   api:
     serverUrl: http://localhost:${server.port}

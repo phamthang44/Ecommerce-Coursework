@@ -1,5 +1,6 @@
 package com.greenwich.ecommerce.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -13,18 +14,18 @@ import lombok.*;
 @AttributeOverride(name = "id", column = @Column(name = "asset_id"))
 public class Asset extends AbstractEntity {
     @Column(name = "file_url", nullable = false)
-    private String fileUrl;
+    private String url;
 
     @Column(name = "file_type", nullable = false)
-    private String fileType;
+    private String type;
 
-
-//    @Column(name = "usage")
-//    private String usage;
+    @Column(name = "`usage`")
+    private String usage;
 
     @ManyToOne
-    @JoinColumn(name = "usage_id", nullable = false)
-    private Product usage_id;
+    @JoinColumn(name = "usage_id")
+    @JsonBackReference
+    private Product product;
 
     @Column(name = "is_primary", nullable = false)
     private boolean isPrimary;

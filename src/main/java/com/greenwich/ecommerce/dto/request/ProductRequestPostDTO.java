@@ -3,11 +3,13 @@ package com.greenwich.ecommerce.dto.request;
 import com.greenwich.ecommerce.common.enums.StockStatus;
 import com.greenwich.ecommerce.common.enums.Unit;
 import com.greenwich.ecommerce.dto.validator.EnumPattern;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 import lombok.Getter;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.util.List;
 
 @Getter
 public class ProductRequestPostDTO implements Serializable {
@@ -37,5 +39,9 @@ public class ProductRequestPostDTO implements Serializable {
     @EnumPattern(name = "stockStatus", regexp = "IN_STOCK|OUT_OF_STOCK|LIMITED|PRE_ORDER", message = "Stock status must be one of the following: in_stock, out_of_stock, limited, pre_order")
     @NotNull(message = "Stock status is required")
     private StockStatus stockStatus;
+
+    @NotEmpty(message = "At least one product image is required")
+    @Valid
+    private List<AssetRequest> assets;
 
 }

@@ -34,12 +34,9 @@ public abstract class AbstractEntity {
 //    @Temporal(TemporalType.TIMESTAMP)
     private LocalDateTime updatedAt;
 
-//    @NotBlank
-//    @Column(name = "created_by", nullable = false)
-//    private String createdBy;
-//
-//    @NotBlank
-//    @Column(name = "updated_by", nullable = false)
-//    private String updatedBy;
-
+    @PrePersist
+    public void prePersist() {
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+    }
 }
