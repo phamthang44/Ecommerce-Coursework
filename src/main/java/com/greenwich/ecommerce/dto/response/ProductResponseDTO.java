@@ -7,6 +7,7 @@ import lombok.*;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.util.List;
 
 @Getter
 @Setter
@@ -23,5 +24,6 @@ public class ProductResponseDTO implements Serializable {
     private BigDecimal price;
     private int quantity;
     private StockStatus stockStatus;
+    private List<AssetResponse> assets;
 
 }

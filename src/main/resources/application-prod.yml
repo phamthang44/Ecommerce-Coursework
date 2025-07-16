@@ -33,6 +33,11 @@ open:
     serverName: server production
     description: Description of API Service in production environment
 
+cloudinary:
+  cloudName: ${CLOUDINARY_CLOUD_NAME}
+  apiKey: ${CLOUDINARY_API_KEY}
+  apiSecret: ${CLOUDINARY_API_SECRET}
+
 # Swagger (springdoc-openapi)
 springdoc:
   api-docs:

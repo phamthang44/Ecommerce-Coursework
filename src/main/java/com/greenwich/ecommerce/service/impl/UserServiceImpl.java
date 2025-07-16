@@ -20,7 +20,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.util.Optional;
 
 @Service
 @Slf4j
@@ -144,5 +143,14 @@ public class UserServiceImpl implements UserService {
                 .phoneNumber(user.getPhone())
                 .role(user.getRole().getName())
                 .build();
+    }
+
+    @Override
+    public User getUserById(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> {
+                    log.error("User not found with id: {}", userId);
+                    return new NotFoundException("User not found with id: " + userId);
+                });
     }
 }

@@ -7,11 +7,12 @@ import com.greenwich.ecommerce.dto.response.CartItemResponseDTO;
 import com.greenwich.ecommerce.dto.response.CartResponseDTO;
 import com.greenwich.ecommerce.entity.*;
 import com.greenwich.ecommerce.exception.InvalidDataException;
-import com.greenwich.ecommerce.exception.NotFoundException;
 import com.greenwich.ecommerce.exception.ResourceNotFoundException;
 import com.greenwich.ecommerce.exception.UnauthorizedException;
 import com.greenwich.ecommerce.repository.*;
 import com.greenwich.ecommerce.service.CartService;
+import com.greenwich.ecommerce.service.ProductService;
+import com.greenwich.ecommerce.service.UserService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,8 +20,6 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 
 @Slf4j
@@ -29,10 +28,11 @@ import java.util.stream.Collectors;
 public class CartServiceImpl implements CartService {
 
     private final CartRepository cartRepository;
-    private final ProductRepository productRepository;
+    private final ProductService productService;
     private final CartItemRepository cartItemRepository;
-    private final UserRepository userRepository;
     private final CartServiceValidator cartServiceValidator;
+    private final AssetService assetService;
+    private final UserService userService;
 
     @Override
     @Transactional
@@ -45,11 +45,7 @@ public class CartServiceImpl implements CartService {
         log.info("Adding product with id {} to cart for user {}", productId, userId);
 
         Cart cart = getOrCreateCart(userId);
-        Product product = productRepository.getProductById(productId);
-        if (product == null) {
-            log.error("Add to cart : Product not found with id: {}", productId);
-            throw new ResourceNotFoundException("Product not found with id: " + productId);
-        }
+        Product product = productService.getProductEntityById(productId);
 
         CartItem existingCartItem = findCartItemByProduct(cart, productId);
 
@@ -65,22 +61,6 @@ public class CartServiceImpl implements CartService {
         return getCartResponseDTO(cartRepository.save(cart));
     }
 
-//    CartResponseDTO.builder()
-//            .cartItems(
-//            cart.getCartItems().stream()
-//                                .map(item -> CartItemResponseDTO.builder()
-//            .productId(item.getProduct().getId())
-//            .name(item.getProduct().getName())
-//            .quantity(item.getQuantity())
-//            .price(item.getProduct().getPrice())
-//            .subTotalPrice(item.getProduct().getPrice().multiply(BigDecimal.valueOf(item.getQuantity())))
-//            .build()
-//                                )
-//                                        .toList()
-//                )
-//                        .totalPrice(cart.getTotalPrice())
-//            .build();
-
     private CartResponseDTO getCartResponseDTO(Cart cart) {
         CartResponseDTO cartResponseDTO = new CartResponseDTO();
         cartResponseDTO.setCartItems(cart.getCartItems().stream()
@@ -92,11 +72,22 @@ public class CartServiceImpl implements CartService {
                         .quantity(cartItem.getQuantity())
                         .price(cartItem.getProduct().getPrice())
                         .subTotalPrice(cartItem.getProduct().getPrice().multiply(BigDecimal.valueOf(cartItem.getQuantity())))
+                        .assetUrl(getCartItemAssetUrl(cartItem))
                         .build())
                 .toList());
         cartResponseDTO.setTotalPrice(cart.getTotalPrice());
 
         return cartResponseDTO;
+    }
+
+    private String getCartItemAssetUrl(CartItem cartItem) {
+        if (cartItem.getProduct() != null && cartItem.getProduct().getAssets() != null && !cartItem.getProduct().getAssets().isEmpty()) {
+
+            Asset asset = assetService.getAssetByUsageId(cartItem.getProduct().getId());
+
+            return asset.getUrl();
+        }
+        return null; // or a default image URL
     }
 
     private CartItem findCartItemByProduct(Cart cart, Long productId) {
@@ -117,11 +108,7 @@ public class CartServiceImpl implements CartService {
         }
 
         Cart cart = new Cart();
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> {
-                    log.error("User not found with id: {}", userId);
-                    return new NotFoundException("User not found with id: " + userId);
-                });
+        User user = userService.getUserById(userId);
 
         cart.setUser(user);
         cart.setStatus("Active");
@@ -189,6 +176,7 @@ public class CartServiceImpl implements CartService {
         }
         log.info("Removing cart item:  with id {} from cart for user {}", cartItemId, userId);
         Cart cart = cartItem.getCart();
+        cartItem.setCategory(null);
         cart.getCartItems().remove(cartItem);
 
         Cart updatedCart = cartRepository.findByUserIdWithItems(userId) // Fetch the cart again to ensure it is up-to-date

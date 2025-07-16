@@ -1,6 +1,8 @@
 package com.greenwich.ecommerce.controller;
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.greenwich.ecommerce.dto.request.ProductCategoryRequestPatchDTO;
 import com.greenwich.ecommerce.dto.request.ProductRequestPostDTO;
 import com.greenwich.ecommerce.dto.response.PageResponse;
@@ -9,15 +11,20 @@ import com.greenwich.ecommerce.dto.response.ResponseData;
 import com.greenwich.ecommerce.service.ProductService;
 import com.greenwich.ecommerce.service.impl.ProductServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -30,6 +37,7 @@ import java.util.List;
 public class ProductController {
 
     private final ProductService productService;
+    private final ObjectMapper objectMapper;
 
     @GetMapping("/{id}")
     @Operation(method= "GET", summary="Get a product", description="This API endpoint allows you to view detail product.")
@@ -43,14 +51,40 @@ public class ProductController {
         return ResponseEntity.status(HttpStatus.OK.value()).body(new ResponseData<>(HttpStatus.OK.value(), "Product found!", product));
     }
 
-    @PostMapping
-    @Operation(method= "POST", summary="Create a product", description="This API endpoint allows you to create a new product. (ADMIN)")
-    public ResponseEntity<ResponseData<ProductResponseDTO>> addProduct(@Valid @RequestBody ProductRequestPostDTO product) {
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(
+            method= "POST",
+            summary="Create a product",
+            description="This API endpoint allows you to create a new product. (ADMIN)"
+
+    )
+    public ResponseEntity<ResponseData<ProductResponseDTO>> addProduct(
+            @Parameter(
+                    description = "Product details in JSON",
+                    required = true,
+                    content = @Content(
+                            mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = ProductRequestPostDTO.class)
+                    )
+            )
+            @Valid @RequestPart("product") String productJson,
+            @Parameter(
+                    description = "List of product images",
+                    required = true,
+                    content = @Content(
+                            mediaType = MediaType.APPLICATION_OCTET_STREAM_VALUE,
+                            schema = @Schema(type = "string", format = "binary")
+                    )
+            )
+            @RequestPart("images") List<MultipartFile> images) throws JsonProcessingException {
+
+        ProductRequestPostDTO product = objectMapper.readValue(productJson, ProductRequestPostDTO.class);
+
         // Logic to add a new product
-        log.info("Adding new product: {}", product);
+        log.info("Adding new product: {}", product.toString());
 
         // Assuming a service method adds the product
-        ProductResponseDTO addedProduct = productService.createProduct(product);
+        ProductResponseDTO addedProduct = productService.createProduct(product, images);
 
         return ResponseEntity.status(HttpStatus.CREATED.value()).body(new ResponseData<>(201, "Product added successfully!", addedProduct));
     }
@@ -83,6 +117,35 @@ public class ProductController {
         log.info("Updating product in controller: with ID: {}", id);
         ProductResponseDTO updatedProduct = productService.updateProduct(id, product);
         return ResponseEntity.status(HttpStatus.OK.value()).body(new ResponseData<>(HttpStatus.OK.value(), "Product updated successfully", updatedProduct));
+    }
+
+    @PatchMapping(value = "/{id}/asset", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(method= "PATCH", summary="Update a product's asset", description="This API endpoint allows you to update a product's asset by ID. (ADMIN)")
+    public ResponseEntity<ResponseData<ProductResponseDTO>> updateProductAsset(
+            @PathVariable("id") @Min(1) Long id,
+            @Parameter(
+                    description = "Image product asset",
+                    required = true,
+                    content = @Content(
+                            mediaType = MediaType.APPLICATION_OCTET_STREAM_VALUE,
+                            schema = @Schema(type = "string", format = "binary")
+                    )
+            )
+            @RequestPart("images") MultipartFile image
+    )  {
+        log.info("Updating product asset in controller: with ID: {}", id);
+        ProductResponseDTO updatedProduct = productService.updateProductAsset(id, image);
+        return ResponseEntity.status(HttpStatus.OK.value()).body(new ResponseData<>(HttpStatus.OK.value(), "Product asset updated successfully", updatedProduct));
+    }
+
+    @PostMapping
+    @Operation(method= "POST", summary="Create a product", description="This API endpoint allows you to create a new product. (ADMIN)")
+    public ResponseEntity<ResponseData<ProductResponseDTO>> createProduct(
+            @Valid @RequestBody ProductRequestPostDTO product
+    ) {
+        log.info("Creating product in controller: {}", product);
+        ProductResponseDTO createdProduct = productService.createProduct(product, null);
+        return ResponseEntity.status(HttpStatus.CREATED.value()).body(new ResponseData<>(HttpStatus.CREATED.value(), "Product created successfully", createdProduct));
     }
 
     @PatchMapping("/{id}")

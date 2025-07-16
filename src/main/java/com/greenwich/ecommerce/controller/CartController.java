@@ -113,7 +113,12 @@ public class CartController {
                                                                         @AuthenticationPrincipal SecurityUserDetails user) {
         log.info("Deleting cart item with product id {} for user {}", item, user.getId());
         CartResponseDTO updatedCart = cartService.removeCartItemsFromCart(item, user.getId());
-        return ResponseEntity.status(200).body(new ResponseData<>(200, "Cart items deleted successfully!", updatedCart));
+        String message = "Cart items deleted successfully!";
+
+        if (updatedCart.getCartItems().isEmpty()) {
+            message += " Your cart is now empty.";
+        }
+        return ResponseEntity.status(200).body(new ResponseData<>(200, message, updatedCart));
     }
 
 }

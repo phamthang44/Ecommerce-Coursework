@@ -1,13 +1,11 @@
 package com.greenwich.ecommerce.service.impl;
 
 import com.greenwich.ecommerce.entity.User;
-import com.greenwich.ecommerce.exception.NotFoundException;
 import com.greenwich.ecommerce.infra.security.SecurityUserDetails;
 import com.greenwich.ecommerce.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
