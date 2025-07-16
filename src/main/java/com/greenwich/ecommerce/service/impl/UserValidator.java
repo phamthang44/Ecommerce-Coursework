@@ -1,9 +1,7 @@
 package com.greenwich.ecommerce.service.impl;
 
 import com.greenwich.ecommerce.common.util.Util;
-import com.greenwich.ecommerce.exception.DuplicateResourceException;
 import com.greenwich.ecommerce.exception.InvalidDataException;
-import com.greenwich.ecommerce.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;

@@ -2,12 +2,10 @@ package com.greenwich.ecommerce.service.impl;
 
 import com.greenwich.ecommerce.common.enums.StockStatus;
 import com.greenwich.ecommerce.common.enums.Unit;
-import com.greenwich.ecommerce.common.mapper.AssetMapper;
 import com.greenwich.ecommerce.common.util.Util;
 import com.greenwich.ecommerce.dto.request.AssetRequest;
 import com.greenwich.ecommerce.dto.request.ProductCategoryRequestPatchDTO;
 import com.greenwich.ecommerce.dto.request.ProductRequestPostDTO;
-import com.greenwich.ecommerce.dto.response.AssetResponse;
 import com.greenwich.ecommerce.dto.response.PageResponse;
 import com.greenwich.ecommerce.dto.response.ProductResponseDTO;
 import com.greenwich.ecommerce.entity.Asset;
@@ -16,8 +14,8 @@ import com.greenwich.ecommerce.entity.Product;
 import com.greenwich.ecommerce.exception.BadRequestException;
 import com.greenwich.ecommerce.exception.InvalidDataException;
 import com.greenwich.ecommerce.exception.ResourceNotFoundException;
-import com.greenwich.ecommerce.repository.CategoryRepository;
 import com.greenwich.ecommerce.repository.ProductRepository;
+import com.greenwich.ecommerce.service.CategoryService;
 import com.greenwich.ecommerce.service.ProductService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -29,7 +27,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.security.InvalidParameterException;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -40,8 +37,7 @@ import java.util.List;
 public class ProductServiceImpl implements ProductService {
 
     private final ProductRepository productRepository;
-    private final CategoryRepository categoryRepository;
-    private final AssetMapper assetMapper;
+    private final CategoryService categoryService;
     private final AssetService assetService;
 
     @Override
@@ -62,7 +58,7 @@ public class ProductServiceImpl implements ProductService {
             throw new ResourceNotFoundException("Product not found with id: " + productId);
         }
         // Assuming stock status is always in stock for simplicity
-        // Assuming unit is always "pcs" for simplicity)
+        // Assuming unit is always "pcs" for simplicity
 
         return convertToResponse(product);
     }
@@ -73,9 +69,9 @@ public class ProductServiceImpl implements ProductService {
 
         StockStatus stockStatus = dto.getStockStatus() != null ? dto.getStockStatus() : StockStatus.IN_STOCK;
         Unit unit = dto.getUnit() != null ? dto.getUnit() : Unit.PIECE;
-        Category category = categoryRepository.findById(dto.getCategoryId()).orElse(null);
+        Category category = categoryService.getCategoryEntityById(dto.getCategoryId());
         if (category == null) {
-            log.error("Category not found with id: {}", dto.getCategoryId());
+            log.error("Create product service : Category not found with id: {}", dto.getCategoryId());
             throw new ResourceNotFoundException("Category not found with id: " + dto.getCategoryId());
         }
 
@@ -164,7 +160,7 @@ public class ProductServiceImpl implements ProductService {
         product.setStockQuantity(dto.getQuantity());
         product.setStockStatus(dto.getStockStatus() != null ? dto.getStockStatus() : StockStatus.IN_STOCK);
         product.setUnit(dto.getUnit() != null ? dto.getUnit() : Unit.PIECE);
-        Category category = categoryRepository.findById(dto.getCategoryId()).orElse(null);
+        Category category = categoryService.getCategoryEntityById(dto.getCategoryId());
         if (category == null) {
             log.error("Update product service: Category not found with id: {}", dto.getCategoryId());
             throw new ResourceNotFoundException("Category not found with id: " + dto.getCategoryId());
@@ -194,8 +190,7 @@ public class ProductServiceImpl implements ProductService {
             throw new ResourceNotFoundException("Product not found with id: " + productId);
         }
 
-        Category updatedCategory = categoryRepository.findById(dto.getCategoryId())
-                .orElseThrow(() -> new ResourceNotFoundException("Category not found with id: " + dto.getCategoryId()));
+        Category updatedCategory = categoryService.getCategoryEntityById(dto.getCategoryId());
 
         product.setCategory(updatedCategory);
         productRepository.save(product);
@@ -208,7 +203,7 @@ public class ProductServiceImpl implements ProductService {
     public ProductResponseDTO createProduct(ProductRequestPostDTO dto) {
         StockStatus stockStatus = dto.getStockStatus() != null ? dto.getStockStatus() : StockStatus.IN_STOCK;
         Unit unit = dto.getUnit() != null ? dto.getUnit() : Unit.PIECE;
-        Category category = categoryRepository.findById(dto.getCategoryId()).orElse(null);
+        Category category = categoryService.getCategoryEntityById(dto.getCategoryId());
         if (category == null) {
             log.error("Create product : Category not found with id: {}", dto.getCategoryId());
             throw new ResourceNotFoundException("Category not found with id: " + dto.getCategoryId());
@@ -286,5 +281,20 @@ public class ProductServiceImpl implements ProductService {
 
         log.info("Update product asset service: Product with id {} updated successfully", productId);
         return convertToResponse(product);
+    }
+
+    @Override
+    public Product getProductEntityById(Long productId) {
+        if (productId == null || productId <= 0) {
+            log.error("Get product entity by id service: Invalid product id: {}", productId);
+            throw new InvalidDataException("Product id must be greater than zero");
+        }
+
+        Product product = productRepository.getProductById(productId);
+        if (product == null) {
+            log.error("Get product entity by id service: Product not found with id: {}", productId);
+            throw new ResourceNotFoundException("Product not found with id: " + productId);
+        }
+        return product;
     }
 }

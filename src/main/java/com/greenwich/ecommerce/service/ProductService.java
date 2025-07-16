@@ -21,5 +21,6 @@ public interface ProductService {
 
     ProductResponseDTO updateProductCategory(Long productId, ProductCategoryRequestPatchDTO dto);
     ProductResponseDTO updateProductAsset(Long productId, MultipartFile file);
+    Product getProductEntityById(Long productId);
 
 }
