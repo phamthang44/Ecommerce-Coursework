@@ -6,6 +6,7 @@ import com.greenwich.ecommerce.dto.request.CartRequestDeleteItemsDTO;
 import com.greenwich.ecommerce.dto.response.CartItemResponseDTO;
 import com.greenwich.ecommerce.dto.response.CartResponseDTO;
 import com.greenwich.ecommerce.entity.*;
+import com.greenwich.ecommerce.exception.BadRequestException;
 import com.greenwich.ecommerce.exception.InvalidDataException;
 import com.greenwich.ecommerce.exception.ResourceNotFoundException;
 import com.greenwich.ecommerce.exception.UnauthorizedException;
@@ -47,6 +48,15 @@ public class CartServiceImpl implements CartService {
         Cart cart = getOrCreateCart(userId);
         Product product = productService.getProductEntityById(productId);
 
+        if (product.getStockQuantity() == 0) {
+            log.error("Product with id {} is out of stock", productId);
+            throw new ResourceNotFoundException("Product is out of stock");
+        }
+
+        if (quantity > product.getStockQuantity()) {
+            log.error("Product with id {} has insufficient stock. Available: {}, Requested: {}", productId, product.getStockQuantity(), quantity);
+            throw new BadRequestException("Insufficient stock for product : " + product.getName());
+        }
         CartItem existingCartItem = findCartItemByProduct(cart, productId);
 
         if (existingCartItem != null) {
@@ -54,7 +64,7 @@ public class CartServiceImpl implements CartService {
             existingCartItem.setQuantity(newQuantity);
             log.info("Product with id {} already exists in the cart, updated quantity to {}", productId, quantity);
         }  else {
-            CartItem newCartItem = new CartItem(cart, product.getCategory(), product, 1);
+            CartItem newCartItem = new CartItem(cart, product.getCategory(), product, quantity);
             cart.getCartItems().add(newCartItem);
             log.info("Added new product with id {} to cart", productId);
         }
@@ -72,7 +82,7 @@ public class CartServiceImpl implements CartService {
                         .quantity(cartItem.getQuantity())
                         .price(cartItem.getProduct().getPrice())
                         .subTotalPrice(cartItem.getProduct().getPrice().multiply(BigDecimal.valueOf(cartItem.getQuantity())))
-                        .assetUrl(getCartItemAssetUrl(cartItem))
+                        .assetUrl(getCartItemAssetUrl(cartItem)) //
                         .build())
                 .toList());
         cartResponseDTO.setTotalPrice(cart.getTotalPrice());
@@ -116,7 +126,7 @@ public class CartServiceImpl implements CartService {
     }
 
     private Cart getOrCreateCart(Long userId) {
-        Cart cart = cartRepository.findByUserIdWithItems(userId).orElse(null);
+        Cart cart = cartRepository.getByUserId(userId);
         if (cart == null) {
             log.info("No cart found for user id: {}, creating a new one", userId);
             return createCart(userId);
@@ -154,6 +164,15 @@ public class CartServiceImpl implements CartService {
         if (product == null) {
             log.error("Change cart item quantity : Product is null for cartItem {}", cartItemId);
             throw new ResourceNotFoundException("Product may be out of stock or deleted");
+        }
+        //        Check the quantity of the product
+        if (product.getStockQuantity() < quantity) {
+            log.error("Cart item with id {} has insufficient stock. Available: {}, Requested: {}", cartItemId, product.getStockQuantity(), quantity);
+            throw new BadRequestException("Insufficient stock for product : " + product.getName());
+        }
+        if (product.getStockQuantity() == quantity) {
+            log.error("Cart item with id {} has the same quantity as stock. Available: {}, Requested: {}", cartItemId, product.getStockQuantity(), quantity);
+            throw new BadRequestException("You cannot set the quantity to the same as stock for product : " + product.getName());
         }
 //        Category category = product.getCategory();
 

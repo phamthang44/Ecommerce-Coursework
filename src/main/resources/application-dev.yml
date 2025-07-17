@@ -33,10 +33,11 @@ cloudinary:
 open:
   api:
     serverUrl: http://localhost:${server.port}
-    title: ${API_TITLE:DUMMY-API-TITLE}
+    title: API Service for Development Environment
     version: v1.0.0
     serverName: server API for development in Scrum project
-    description: Description of API Service
+    description: This is the API documentation for the development environment of the Scrum project. It includes endpoints for managing Products, Categories, Cart operations, and Authentication.
+
 
 
 logging:
