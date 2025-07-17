@@ -24,7 +24,7 @@ public class AssetService {
     public Asset uploadAsset(AssetRequest request, MultipartFile file, Product product) {
         String url = cloudinaryService.uploadFile(file);
 
-        Asset asset = new Asset();
+        Asset asset  = new Asset();
         asset.setUrl(url);
         asset.setType(request.getType());
         asset.setUsage(request.getUsage());
@@ -33,6 +33,13 @@ public class AssetService {
         asset.setProduct(product);
 
         return assetRepository.save(asset);
+    }
+
+    public Asset getExistingAssetByUrl(String url) {
+        return assetRepository.findAll().stream()
+                .filter(asset -> asset.getUrl().equals(url))
+                .findFirst()
+                .orElseThrow(() -> new ResourceNotFoundException("Asset not found with URL: " + url));
     }
 
     public AssetResponse convertToAssetResponse(Asset asset) {
@@ -67,7 +74,13 @@ public class AssetService {
         if (usageId == null || usageId <= 0) {
             throw new InvalidDataException("Usage ID must be a positive number");
         }
-        return assetRepository.findByUsageId(usageId);
+
+        return assetRepository.findByUsageIdAndIsPrimary(usageId, true);
+    }
+
+    public boolean isPrimaryAsset(Long assetId) {
+        Asset asset = getAssetById(assetId);
+        return asset.isPrimary();
     }
 
 }
