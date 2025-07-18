@@ -24,6 +24,15 @@ spring:
       platform: mysql
       schema-locations:
         - classpath:init_db.sql
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+
 
 open:
   api:

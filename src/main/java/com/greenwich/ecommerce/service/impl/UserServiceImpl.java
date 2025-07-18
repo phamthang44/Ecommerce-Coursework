@@ -1,5 +1,6 @@
 package com.greenwich.ecommerce.service.impl;
 
+import com.greenwich.ecommerce.common.enums.ErrorCode;
 import com.greenwich.ecommerce.common.enums.Gender;
 import com.greenwich.ecommerce.common.enums.UserStatus;
 import com.greenwich.ecommerce.common.enums.UserType;
@@ -10,9 +11,11 @@ import com.greenwich.ecommerce.dto.response.UserDetailsResponse;
 import com.greenwich.ecommerce.entity.Role;
 import com.greenwich.ecommerce.entity.User;
 import com.greenwich.ecommerce.exception.*;
+import com.greenwich.ecommerce.infra.email.EmailService;
 import com.greenwich.ecommerce.repository.RoleRepository;
 import com.greenwich.ecommerce.repository.UserRepository;
 import com.greenwich.ecommerce.service.UserService;
+import jakarta.mail.MessagingException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,6 +34,7 @@ public class UserServiceImpl implements UserService {
     private final PasswordEncoder passwordEncoder;
     private final UserValidator userValidator;
     private final UserMapper userMapper;
+    private final EmailService emailService;
 
     @Transactional
     @Override
@@ -88,8 +92,20 @@ public class UserServiceImpl implements UserService {
         user.setPhone(phoneNumber);
         log.info("Phone number: {}", user.getPhone());
         user.setDateOfBirth(dateOfBirth);
-        return userRepository.save(user).getId();
-
+        Long userId = userRepository.save(user).getId();
+        if (userId != null) {
+            log.info("User registered successfully with ID: {}", userId);
+            try {
+                emailService.sendEmailRegistrationHtml(user.getEmail(), user.getUsername());
+            } catch (MessagingException e) {
+                log.error("Failed to send registration email to {}", user.getEmail(), e);
+                throw new CustomMessagingException(ErrorCode.INTERNAL_ERROR, "Failed to send registration email");
+            }
+        } else {
+            log.error("Failed to register user");
+            throw new InternalServerException("Failed to register user");
+        }
+        return userId;
     }
 
     public UserDetailsResponse getUserDetailsByEmail(String email) {
