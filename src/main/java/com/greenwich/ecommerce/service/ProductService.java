@@ -25,4 +25,6 @@ public interface ProductService {
     ProductResponseDTO deleteProduct(Long productId);
     ProductResponseDTO uploadProductAssets(Long productId, List<MultipartFile> files);
     ProductResponseDTO updateProductAsset(Long productId, MultipartFile file, boolean isPrimary);
+
+    PageResponse<ProductResponseDTO> searchProductWithKeyWord(int pageNo, int pageSize, String keyword);
 }

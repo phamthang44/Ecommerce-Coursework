@@ -3,7 +3,6 @@ package com.greenwich.ecommerce.dto.response;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.greenwich.ecommerce.common.enums.UserStatus;
-import com.greenwich.ecommerce.entity.Role;
 import lombok.*;
 
 import java.io.Serializable;

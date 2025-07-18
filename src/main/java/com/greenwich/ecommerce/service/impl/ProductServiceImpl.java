@@ -390,6 +390,50 @@ public class ProductServiceImpl implements ProductService {
         return convertToResponse(product);
     }
 
+    @Override
+    public PageResponse<ProductResponseDTO> searchProductWithKeyWord(int pageNo, int pageSize, String keyword) {
+        int page = 0;
+        if (pageNo > 0) {
+            page = pageNo - 1; // Convert to zero-based index
+        }
+        if (pageNo < 0 || pageSize <= 0) {
+            log.error("Search product: Invalid pagination parameters: pageNo={}, pageSize={}", pageNo, pageSize);
+            throw new InvalidDataException("Page number and size must be non-negative and positive respectively");
+        }
+        if (keyword == null || keyword.isBlank()) {
+            log.error("Search product: Keyword cannot be null or empty");
+            throw new InvalidDataException("Keyword cannot be null or empty");
+        }
+
+        keyword = keyword.trim();
+
+        Pageable pageable = PageRequest.of(page, pageSize);
+
+        List<Product> products = productRepository.findByNameContainingIgnoreCaseAndDeletedFalse(keyword, pageable);
+        System.out.println("Search keyword: " + products);
+        if (products.isEmpty()) {
+            log.warn("No products found with keyword: {}", keyword);
+            return PageResponse.<ProductResponseDTO>builder()
+                    .pageNo(pageNo)
+                    .pageSize(pageSize)
+                    .totalPages(0)
+                    .totalElements(0)
+                    .items(new ArrayList<>())
+                    .build();
+        }
+        List<ProductResponseDTO> responses = products.stream()
+                .map(this::convertToResponse)
+                .toList();
+
+
+        return PageResponse.<ProductResponseDTO>builder()
+                .pageNo(pageNo)
+                .pageSize(pageSize)
+                .totalPages((int) Math.ceil((double) products.size() / pageSize))
+                .totalElements(products.size())
+                .items(responses)
+                .build();
+    }
 
     @Override
     public ProductResponseDTO updateProductAsset(Long productId, MultipartFile file, boolean isPrimary) {

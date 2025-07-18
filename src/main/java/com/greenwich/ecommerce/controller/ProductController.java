@@ -88,15 +88,32 @@ public class ProductController {
         return ResponseEntity.status(HttpStatus.CREATED.value()).body(new ResponseData<>(201, "Product added successfully!", addedProduct));
     }
 
+//    @GetMapping
+//    @Operation(method= "GET", summary="Get list of product with page", description="This API endpoint allows you to view a paginated list of products.")
+//    public ResponseEntity<ResponseData<PageResponse<ProductResponseDTO>>> getAllProductsWithPage(
+//        @RequestParam(defaultValue = "1", required = false) int pageNo,
+//        @RequestParam(defaultValue = "10", required = false) int pageSize
+//    ) {
+//        log.info("Get products in controller : Request get all products with pageNo: {}, pageSize: {}", pageNo, pageSize);
+//
+//        return ResponseEntity.status(HttpStatus.OK.value()).body(new ResponseData<>(HttpStatus.OK.value(), "Product list", productService.getAllProductsWithPage(pageNo, pageSize)));
+//    }
     @GetMapping
-    @Operation(method= "GET", summary="Get list of product with page", description="This API endpoint allows you to view a paginated list of products.")
-    public ResponseEntity<ResponseData<PageResponse<ProductResponseDTO>>> getAllProductsWithPage(
-        @RequestParam(defaultValue = "1", required = false) int pageNo,
-        @RequestParam(defaultValue = "10", required = false) int pageSize
+    @Operation(method= "GET", summary="Get all or search products", description="This API endpoint returns a paginated list of products. If 'keyword' is provided, it returns filtered results.")
+    public ResponseEntity<ResponseData<PageResponse<ProductResponseDTO>>> getAllOrSearchProducts(
+            @RequestParam(defaultValue = "1") int pageNo,
+            @RequestParam(defaultValue = "10") int pageSize,
+            @RequestParam(required = false) String keyword
     ) {
-        log.info("Get products in controller : Request get all products with pageNo: {}, pageSize: {}", pageNo, pageSize);
-
-        return ResponseEntity.status(HttpStatus.OK.value()).body(new ResponseData<>(HttpStatus.OK.value(), "Product list", productService.getAllProductsWithPage(pageNo, pageSize)));
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            log.info("Search products with keyword: {}", keyword);
+            var result = productService.searchProductWithKeyWord(pageNo, pageSize, keyword);
+            return ResponseEntity.ok(new ResponseData<>(HttpStatus.OK.value(), "Search results for keyword: " + keyword, result));
+        } else {
+            log.info("Get all products with pageNo: {}, pageSize: {}", pageNo, pageSize);
+            var result = productService.getAllProductsWithPage(pageNo, pageSize);
+            return ResponseEntity.ok(new ResponseData<>(HttpStatus.OK.value(), "Product list", result));
+        }
     }
 
 //    @GetMapping("/all")
@@ -186,7 +203,17 @@ public class ProductController {
 //        ProductResponseDTO updatedProduct = productService.updateProductCategory(id, dto);
 //        return ResponseEntity.status(HttpStatus.OK.value()).body(new ResponseData<>(HttpStatus.OK.value(), "Product type updated successfully", updatedProduct));
 //    }
-
+//    @GetMapping
+//    @Operation(method= "GET", summary="Search products by keyword", description="This API endpoint allows you to search products by keyword. (CUSTOMER)")
+//    public ResponseEntity<ResponseData<PageResponse<ProductResponseDTO>>> searchProductWithKeyWord(
+//            @RequestParam(defaultValue = "1", required = false) int pageNo,
+//            @RequestParam(defaultValue = "10", required = false) int pageSize,
+//            @RequestParam String keyword
+//    ) {
+//        log.info("Searching products with keyword: {}", keyword);
+//        PageResponse<ProductResponseDTO> response = productService.searchProductWithKeyWord(pageNo, pageSize, keyword);
+//        return ResponseEntity.status(HttpStatus.OK.value()).body(new ResponseData<>(HttpStatus.OK.value(), "Search results for keyword: " + keyword, response));
+//    }
 
 
 }
