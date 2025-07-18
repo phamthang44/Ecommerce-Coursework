@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 @Slf4j
@@ -50,7 +51,7 @@ public class CartServiceImpl implements CartService {
 
         if (product.getStockQuantity() == 0) {
             log.error("Product with id {} is out of stock", productId);
-            throw new ResourceNotFoundException("Product is out of stock");
+            throw new ResourceNotFoundException(product.getName() + " is out of stock");
         }
 
         if (quantity > product.getStockQuantity()) {
@@ -82,7 +83,7 @@ public class CartServiceImpl implements CartService {
                         .quantity(cartItem.getQuantity())
                         .price(cartItem.getProduct().getPrice())
                         .subTotalPrice(cartItem.getProduct().getPrice().multiply(BigDecimal.valueOf(cartItem.getQuantity())))
-                        .assetUrl(getCartItemAssetUrl(cartItem)) //
+                        .assetUrl(getCartItemAssetUrl(cartItem))
                         .build())
                 .toList());
         cartResponseDTO.setTotalPrice(cart.getTotalPrice());
@@ -145,6 +146,10 @@ public class CartServiceImpl implements CartService {
 
     }
 
+    private boolean isCartItemBelongToUser(Long userId, CartItem cartItem) {
+        return cartItemRepository.existsByIdAndCartUserId(cartItem.getId(), userId);
+    }
+
     @Transactional
     @Override
     public CartResponseDTO changeCartItemQuantity(CartItemUpdateRequestDTO updateDTO, Long userId) {
@@ -159,6 +164,10 @@ public class CartServiceImpl implements CartService {
             log.error("Change cart item quantity : Cart item not found with id: {}", cartItemId);
             return new ResourceNotFoundException("Cart item not found with id: " + cartItemId);
         });
+        if (!isCartItemBelongToUser(userId, cartItem)) {
+            log.error("Change cart item quantity : Cart item with id {} does not belong to user {}", cartItemId, userId);
+            throw new UnauthorizedException("You do not have permission to change this cart item");
+        }
 
         Product product = cartItem.getProduct();
         if (product == null) {
@@ -177,8 +186,14 @@ public class CartServiceImpl implements CartService {
 //        Category category = product.getCategory();
 
         cartItem.setQuantity(quantity); // Managed entity, change will be persisted
-
-        return getCartResponseDTO(cart);
+        cartItemRepository.save(cartItem);
+        for (CartItem item : cart.getCartItems()) {
+            if (item.getId().equals(cartItemId)) {
+                item.setQuantity(quantity);
+            }
+        }
+        Cart updatedCart = cartRepository.save(cart);
+        return getCartResponseDTO(updatedCart);
     }
 
     @Override

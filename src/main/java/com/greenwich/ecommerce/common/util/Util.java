@@ -75,4 +75,39 @@ public class Util {
         return pageNo > 0 ? pageNo - 1 : 0; // Convert to zero-based index
     }
 
+    public static void isIntegerNumber(Integer num) {
+        if (num == null) {
+            throw new InvalidDataException("Invalid data");
+        }
+        try {
+            String str = String.valueOf(num);
+            Integer.parseInt(str);
+        } catch (NumberFormatException e) {
+            throw new NumberFormatException(num + " is not a integer number");
+        }
+    }
+
+    public static void isDoubleNumber(Double num) {
+        if (num == null) {
+            throw new InvalidDataException("Invalid data");
+        }
+        try {
+            String str = String.valueOf(num);
+            Double.parseDouble(str);
+        } catch (NumberFormatException e) {
+            throw new NumberFormatException(num + " is not a double number");
+        }
+    }
+
+    public static void isLongNumber(Long num) {
+        if (num == null) {
+            throw new InvalidDataException("Invalid data");
+        }
+        try {
+            String str = String.valueOf(num);
+            Long.parseLong(str);
+        } catch (NumberFormatException e) {
+            throw new NumberFormatException(num + " is not a long number");
+        }
+    }
 }

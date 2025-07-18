@@ -5,6 +5,7 @@ import com.greenwich.ecommerce.dto.request.RegisterRequestDTO;
 import com.greenwich.ecommerce.dto.response.LoginResponse;
 import com.greenwich.ecommerce.dto.response.ResponseData;
 import com.greenwich.ecommerce.dto.response.ResponseError;
+import com.greenwich.ecommerce.exception.CustomMessagingException;
 import com.greenwich.ecommerce.infra.security.SecurityUserDetails;
 import com.greenwich.ecommerce.service.UserService;
 import com.greenwich.ecommerce.service.impl.JwtTokenService;
