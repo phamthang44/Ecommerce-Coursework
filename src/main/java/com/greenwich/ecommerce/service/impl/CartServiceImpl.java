@@ -69,6 +69,7 @@ public class CartServiceImpl implements CartService {
             cart.getCartItems().add(newCartItem);
             log.info("Added new product with id {} to cart", productId);
         }
+        cart.setTotalPrice(getCartTotalPrice(cart));
         return getCartResponseDTO(cartRepository.save(cart));
     }
 
@@ -82,11 +83,12 @@ public class CartServiceImpl implements CartService {
                         .name(cartItem.getProduct().getName())
                         .quantity(cartItem.getQuantity())
                         .price(cartItem.getProduct().getPrice())
-                        .subTotalPrice(cartItem.getProduct().getPrice().multiply(BigDecimal.valueOf(cartItem.getQuantity())))
+                        .subTotalPrice(getSubTotalPrice(cartItem))
                         .assetUrl(getCartItemAssetUrl(cartItem))
                         .build())
                 .toList());
-        cartResponseDTO.setTotalPrice(cart.getTotalPrice());
+        BigDecimal totalPrice = getCartTotalPrice(cart);
+        cartResponseDTO.setTotalPrice(totalPrice);
 
         return cartResponseDTO;
     }
@@ -106,6 +108,19 @@ public class CartServiceImpl implements CartService {
                 .filter(item -> item.getProduct().getId().equals(productId))
                 .findFirst()
                 .orElse(null);
+    }
+
+    private BigDecimal getSubTotalPrice(CartItem cartItem) {
+        if (cartItem.getProduct() != null) {
+            return cartItem.getProduct().getPrice().multiply(BigDecimal.valueOf(cartItem.getQuantity()));
+        }
+        return BigDecimal.ZERO; // or handle as needed
+    }
+
+    private BigDecimal getCartTotalPrice(Cart cart) {
+        return cart.getCartItems().stream()
+                .map(this::getSubTotalPrice)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
     private boolean isCartBelongToUser(Long userId, Cart cart) {
@@ -192,6 +207,7 @@ public class CartServiceImpl implements CartService {
                 item.setQuantity(quantity);
             }
         }
+        cart.setTotalPrice(getCartTotalPrice(cart));
         Cart updatedCart = cartRepository.save(cart);
         return getCartResponseDTO(updatedCart);
     }
@@ -205,7 +221,8 @@ public class CartServiceImpl implements CartService {
             log.error("Remove cart item : Cart item not found with id: {}", cartItemId);
             return new ResourceNotFoundException("Cart item not found with id: " + cartItemId);
         });
-        if (!cartItem.getCart().getUser().getId().equals(userId)) {
+        if (!isCartItemBelongToUser(userId, cartItem)) {
+            log.error("Remove cart item : Cart item with id {} does not belong to user {}", cartItemId, userId);
             throw new UnauthorizedException("You do not have permission to delete this cart item");
         }
         log.info("Removing cart item:  with id {} from cart for user {}", cartItemId, userId);
@@ -225,6 +242,14 @@ public class CartServiceImpl implements CartService {
         cartServiceValidator.validateDeleteCartItemsRequest(userId, items);
 //        boolean isCartBelongToUser = cartRepository.existsByIdAndUserId(userId);
         log.info("Removing cart items: {} from cart for user {}", items.getCartItemIds().toString(), userId);
+
+        List<CartItem> cartItems = cartItemRepository.findAllById(items.getCartItemIds());
+        for (CartItem item : cartItems) {
+            if (isCartItemBelongToUser(userId, item)) {
+                log.error("Remove cart items : Cart item with id {} does not belong to user {}", item.getId(), userId);
+                throw new UnauthorizedException("You do not have permission to delete this cart item");
+            }
+        }
 
         Cart cart = cartRepository.findByUserIdWithItems(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Cart not found for user: " + userId));
@@ -268,6 +293,10 @@ public class CartServiceImpl implements CartService {
         List<CartItem> itemsToRemove = new ArrayList<>(cart.getCartItems());
 
         for (CartItem ci : itemsToRemove) {
+            if (!isCartItemBelongToUser(userId, ci)) {
+                log.error("Remove all items in cart: Cart item with id {} does not belong to user {}", ci.getId(), userId);
+                throw new UnauthorizedException("You do not have permission to delete this cart item");
+            }
             cart.getCartItems().remove(ci); // remove from list
             ci.setCart(null);               // mark orphan
             ci.setCategory(null);           //remove category reference
