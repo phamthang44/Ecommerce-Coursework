@@ -10,6 +10,7 @@ import com.greenwich.ecommerce.infra.security.SecurityUserDetails;
 import com.greenwich.ecommerce.service.CartService;
 import com.greenwich.ecommerce.service.impl.CartServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 @Slf4j
 @RequestMapping("/api/v1/cart")
 @RequiredArgsConstructor
+@Tag(name = "cart Management", description = "Endpoints for managing cart, including cart Items")
 public class CartController {
     private final CartService cartService;
 
