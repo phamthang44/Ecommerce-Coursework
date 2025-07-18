@@ -229,4 +229,34 @@ public class GlobalHandlerException {
     }
 
 
+    @ExceptionHandler(NumberFormatException.class)
+    @ResponseStatus(BAD_REQUEST)
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "400", description = "Bad Request",
+                    content = {@Content(mediaType = APPLICATION_JSON_VALUE,
+                            examples = @ExampleObject(
+                                    name = "400 Response",
+                                    summary = "Handle exception when internal server error",
+                                    value = """
+                                            {
+                                              "timestamp": "2023-10-19T06:35:52.333+00:00",
+                                              "status": 400,
+                                              "path": "/api/v1/...",
+                                              "error": "Bad request",
+                                              "message": "Invalid number format: {data}"
+                                            }
+                                            """
+                            ))})
+    })
+    public ErrorResponse handleNumberFormatException(NumberFormatException e, WebRequest request) {
+        ErrorResponse errorResponse = new ErrorResponse();
+        errorResponse.setTimestamp(new Date());
+        errorResponse.setPath(request.getDescription(false).replace("uri=", ""));
+        errorResponse.setStatus(BAD_REQUEST.value());
+        errorResponse.setError(BAD_REQUEST.getReasonPhrase());
+        errorResponse.setMessage(e.getMessage());
+
+        return errorResponse;
+    }
+
 }

@@ -19,4 +19,6 @@ public interface AssetRepository extends JpaRepository<Asset, Long> {
     @Query("SELECT a FROM Asset a WHERE a.product.id = :usageId")
     Asset findByUsageId(@Param("usageId") Long usageId);
 
+    @Query("SELECT a FROM Asset a WHERE a.product.id = :usageId AND a.isPrimary = :isPrimary")
+    Asset findByUsageIdAndIsPrimary(@Param("usageId") Long usageId, @Param("isPrimary") boolean isPrimary);
 }

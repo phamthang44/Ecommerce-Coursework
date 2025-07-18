@@ -6,6 +6,7 @@ import com.greenwich.ecommerce.dto.request.CartRequestDeleteItemsDTO;
 import com.greenwich.ecommerce.dto.response.CartItemResponseDTO;
 import com.greenwich.ecommerce.dto.response.CartResponseDTO;
 import com.greenwich.ecommerce.entity.*;
+import com.greenwich.ecommerce.exception.BadRequestException;
 import com.greenwich.ecommerce.exception.InvalidDataException;
 import com.greenwich.ecommerce.exception.ResourceNotFoundException;
 import com.greenwich.ecommerce.exception.UnauthorizedException;
@@ -20,6 +21,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 @Slf4j
@@ -47,6 +49,15 @@ public class CartServiceImpl implements CartService {
         Cart cart = getOrCreateCart(userId);
         Product product = productService.getProductEntityById(productId);
 
+        if (product.getStockQuantity() == 0) {
+            log.error("Product with id {} is out of stock", productId);
+            throw new ResourceNotFoundException(product.getName() + " is out of stock");
+        }
+
+        if (quantity > product.getStockQuantity()) {
+            log.error("Product with id {} has insufficient stock. Available: {}, Requested: {}", productId, product.getStockQuantity(), quantity);
+            throw new BadRequestException("Insufficient stock for product : " + product.getName());
+        }
         CartItem existingCartItem = findCartItemByProduct(cart, productId);
 
         if (existingCartItem != null) {
@@ -54,10 +65,11 @@ public class CartServiceImpl implements CartService {
             existingCartItem.setQuantity(newQuantity);
             log.info("Product with id {} already exists in the cart, updated quantity to {}", productId, quantity);
         }  else {
-            CartItem newCartItem = new CartItem(cart, product.getCategory(), product, 1);
+            CartItem newCartItem = new CartItem(cart, product.getCategory(), product, quantity);
             cart.getCartItems().add(newCartItem);
             log.info("Added new product with id {} to cart", productId);
         }
+        cart.setTotalPrice(getCartTotalPrice(cart));
         return getCartResponseDTO(cartRepository.save(cart));
     }
 
@@ -71,11 +83,12 @@ public class CartServiceImpl implements CartService {
                         .name(cartItem.getProduct().getName())
                         .quantity(cartItem.getQuantity())
                         .price(cartItem.getProduct().getPrice())
-                        .subTotalPrice(cartItem.getProduct().getPrice().multiply(BigDecimal.valueOf(cartItem.getQuantity())))
+                        .subTotalPrice(getSubTotalPrice(cartItem))
                         .assetUrl(getCartItemAssetUrl(cartItem))
                         .build())
                 .toList());
-        cartResponseDTO.setTotalPrice(cart.getTotalPrice());
+        BigDecimal totalPrice = getCartTotalPrice(cart);
+        cartResponseDTO.setTotalPrice(totalPrice);
 
         return cartResponseDTO;
     }
@@ -97,6 +110,19 @@ public class CartServiceImpl implements CartService {
                 .orElse(null);
     }
 
+    private BigDecimal getSubTotalPrice(CartItem cartItem) {
+        if (cartItem.getProduct() != null) {
+            return cartItem.getProduct().getPrice().multiply(BigDecimal.valueOf(cartItem.getQuantity()));
+        }
+        return BigDecimal.ZERO; // or handle as needed
+    }
+
+    private BigDecimal getCartTotalPrice(Cart cart) {
+        return cart.getCartItems().stream()
+                .map(this::getSubTotalPrice)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
     private boolean isCartBelongToUser(Long userId, Cart cart) {
         return cartRepository.existsByIdAndUserId(cart.getId(), userId);
     }
@@ -116,7 +142,7 @@ public class CartServiceImpl implements CartService {
     }
 
     private Cart getOrCreateCart(Long userId) {
-        Cart cart = cartRepository.findByUserIdWithItems(userId).orElse(null);
+        Cart cart = cartRepository.getByUserId(userId);
         if (cart == null) {
             log.info("No cart found for user id: {}, creating a new one", userId);
             return createCart(userId);
@@ -135,6 +161,10 @@ public class CartServiceImpl implements CartService {
 
     }
 
+    private boolean isCartItemBelongToUser(Long userId, CartItem cartItem) {
+        return cartItemRepository.existsByIdAndCartUserId(cartItem.getId(), userId);
+    }
+
     @Transactional
     @Override
     public CartResponseDTO changeCartItemQuantity(CartItemUpdateRequestDTO updateDTO, Long userId) {
@@ -149,17 +179,37 @@ public class CartServiceImpl implements CartService {
             log.error("Change cart item quantity : Cart item not found with id: {}", cartItemId);
             return new ResourceNotFoundException("Cart item not found with id: " + cartItemId);
         });
+        if (!isCartItemBelongToUser(userId, cartItem)) {
+            log.error("Change cart item quantity : Cart item with id {} does not belong to user {}", cartItemId, userId);
+            throw new UnauthorizedException("You do not have permission to change this cart item");
+        }
 
         Product product = cartItem.getProduct();
         if (product == null) {
             log.error("Change cart item quantity : Product is null for cartItem {}", cartItemId);
             throw new ResourceNotFoundException("Product may be out of stock or deleted");
         }
+        //        Check the quantity of the product
+        if (product.getStockQuantity() < quantity) {
+            log.error("Cart item with id {} has insufficient stock. Available: {}, Requested: {}", cartItemId, product.getStockQuantity(), quantity);
+            throw new BadRequestException("Insufficient stock for product : " + product.getName());
+        }
+        if (product.getStockQuantity() == quantity) {
+            log.error("Cart item with id {} has the same quantity as stock. Available: {}, Requested: {}", cartItemId, product.getStockQuantity(), quantity);
+            throw new BadRequestException("You cannot set the quantity to the same as stock for product : " + product.getName());
+        }
 //        Category category = product.getCategory();
 
         cartItem.setQuantity(quantity); // Managed entity, change will be persisted
-
-        return getCartResponseDTO(cart);
+        cartItemRepository.save(cartItem);
+        for (CartItem item : cart.getCartItems()) {
+            if (item.getId().equals(cartItemId)) {
+                item.setQuantity(quantity);
+            }
+        }
+        cart.setTotalPrice(getCartTotalPrice(cart));
+        Cart updatedCart = cartRepository.save(cart);
+        return getCartResponseDTO(updatedCart);
     }
 
     @Override
@@ -171,7 +221,8 @@ public class CartServiceImpl implements CartService {
             log.error("Remove cart item : Cart item not found with id: {}", cartItemId);
             return new ResourceNotFoundException("Cart item not found with id: " + cartItemId);
         });
-        if (!cartItem.getCart().getUser().getId().equals(userId)) {
+        if (!isCartItemBelongToUser(userId, cartItem)) {
+            log.error("Remove cart item : Cart item with id {} does not belong to user {}", cartItemId, userId);
             throw new UnauthorizedException("You do not have permission to delete this cart item");
         }
         log.info("Removing cart item:  with id {} from cart for user {}", cartItemId, userId);
@@ -191,6 +242,14 @@ public class CartServiceImpl implements CartService {
         cartServiceValidator.validateDeleteCartItemsRequest(userId, items);
 //        boolean isCartBelongToUser = cartRepository.existsByIdAndUserId(userId);
         log.info("Removing cart items: {} from cart for user {}", items.getCartItemIds().toString(), userId);
+
+        List<CartItem> cartItems = cartItemRepository.findAllById(items.getCartItemIds());
+        for (CartItem item : cartItems) {
+            if (isCartItemBelongToUser(userId, item)) {
+                log.error("Remove cart items : Cart item with id {} does not belong to user {}", item.getId(), userId);
+                throw new UnauthorizedException("You do not have permission to delete this cart item");
+            }
+        }
 
         Cart cart = cartRepository.findByUserIdWithItems(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Cart not found for user: " + userId));
@@ -234,6 +293,10 @@ public class CartServiceImpl implements CartService {
         List<CartItem> itemsToRemove = new ArrayList<>(cart.getCartItems());
 
         for (CartItem ci : itemsToRemove) {
+            if (!isCartItemBelongToUser(userId, ci)) {
+                log.error("Remove all items in cart: Cart item with id {} does not belong to user {}", ci.getId(), userId);
+                throw new UnauthorizedException("You do not have permission to delete this cart item");
+            }
             cart.getCartItems().remove(ci); // remove from list
             ci.setCart(null);               // mark orphan
             ci.setCategory(null);           //remove category reference
