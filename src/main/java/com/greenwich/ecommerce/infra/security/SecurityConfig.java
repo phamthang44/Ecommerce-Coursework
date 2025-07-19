@@ -119,7 +119,9 @@ public class SecurityConfig {
                     auth.requestMatchers(HttpMethod.PUT, "/api/v1/cart/items").hasAnyRole("CUSTOMER", "ADMIN");
                     auth.requestMatchers(HttpMethod.DELETE, "/api/v1/cart/items/{id}").hasAnyRole("CUSTOMER", "ADMIN");
                     auth.requestMatchers( "/api/v1/order").hasRole("ADMIN");
-                    auth.requestMatchers( "/api/v1/recipients").hasRole("ADMIN");
+                    auth.requestMatchers( HttpMethod.GET,"/api/v1/address").hasAnyRole("CUSTOMER", "ADMIN");
+                    auth.requestMatchers( HttpMethod.PUT,"/api/v1/address").hasAnyRole("CUSTOMER", "ADMIN");
+                    auth.requestMatchers( HttpMethod.POST,"/api/v1/address").hasAnyRole("CUSTOMER", "ADMIN");
                     auth.anyRequest().authenticated();
                     }
                 )

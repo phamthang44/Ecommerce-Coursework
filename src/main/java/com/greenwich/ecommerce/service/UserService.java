@@ -17,5 +17,5 @@ public interface UserService {
     UserDetailsResponse updateUserRole(Long userId, UserType userType);
     User getUserById(Long userId);
 
-    void updateAddress(Long userId, String addressLine);
+    void addAddressForUser(Long userId, String addressLine);
 }

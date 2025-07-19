@@ -19,7 +19,7 @@ public class AddressRequestDTO {
     @NotBlank(message = "Country cannot be blank")
     private String country;
 
-    @NotNull(message = "Recipient name cannot be null")
-    private boolean isDefault;
+    @NotNull(message = "Default status cannot be null")
+    private boolean defaultAddress;
 
 }

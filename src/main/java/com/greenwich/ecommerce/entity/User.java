@@ -54,7 +54,7 @@ public class User extends AbstractEntity implements SoftDeletable {
     @Column(name = "status")
     private UserStatus status;
 
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "user")
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "user", orphanRemoval = true)
     private Set<Address> addresses = new HashSet<>();
 
     public void saveAddress(Address address) {

@@ -56,7 +56,7 @@ public class CartController {
     public ResponseEntity<ResponseData<CartResponseDTO>> updateCart(@RequestBody CartItemUpdateRequestDTO item,
                                                                     @AuthenticationPrincipal SecurityUserDetails user
                                                                    ) {
-        log.info("Updating (reduce product quantity) product id in cart: {}", item.getCartItemId());
+        log.info("Updating quantity of product in cart: {}", item.getCartItemId());
         CartResponseDTO updatedProduct = cartService.changeCartItemQuantity(item, user.getId());
 
         return ResponseEntity.status(200).body(new ResponseData<>(200, "The item quantity has changed", updatedProduct));
