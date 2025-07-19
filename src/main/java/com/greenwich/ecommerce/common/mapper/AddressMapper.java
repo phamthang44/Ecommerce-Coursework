@@ -18,5 +18,6 @@ public interface AddressMapper {
     @Mapping(target = "addressLine", source = "userAddress")
     @Mapping(target = "postCode", source = "postalCode")
     @Mapping(target = "defaultAddress", source = "default")
+    @Mapping(target = "id", source = "id")
     AddressResponseDTO toAddressResponseDTO(Address address);
 }

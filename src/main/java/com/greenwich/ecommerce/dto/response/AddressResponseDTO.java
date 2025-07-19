@@ -13,6 +13,7 @@ import java.io.Serializable;
 @Builder
 public class AddressResponseDTO implements Serializable {
 
+    private Long id;
     private String addressLine;
     private String city;
     private String postCode;
