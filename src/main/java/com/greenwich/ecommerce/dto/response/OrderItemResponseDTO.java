@@ -9,10 +9,10 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class CartItemResponseDTO {
-
-    private Long id;
-    private Long productId;
+public class OrderItemResponseDTO {
+    private Long orderId; // map voi thang Response Order de biet order nao
+    private Long id; // id cua thang order item, phan biet giua cac order item
+    private Long productId; // dung de map qua product
     private String name;
     private int quantity;
     private BigDecimal price;

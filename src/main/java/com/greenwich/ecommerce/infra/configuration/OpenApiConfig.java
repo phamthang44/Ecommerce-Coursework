@@ -29,7 +29,6 @@ public class OpenApiConfig {
                         .title(title)
                         .version(version)
                         .description(description))
-//.license(new License().name("API license").url("http://domain.vn/license")))
                 .servers(List.of(new Server().url(serverUrl).description(serverName)))
                 .addSecurityItem(new SecurityRequirement().addList("bearerAuth"))
                 .components(new Components()

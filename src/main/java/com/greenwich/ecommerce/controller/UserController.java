@@ -44,6 +44,12 @@ public class UserController {
         return ResponseEntity.ok(new ResponseData<>(200, "Current user details fetched successfully", currentUser));
     }
 
+    @PutMapping("/{id}/address")
+    public ResponseEntity<ResponseData<UserDetailsResponse>> updateUserAddress(@PathVariable("id") Long id, @RequestBody String address) {
+        log.info("Updating address for user with ID: {}", id);
+//        UserDetailsResponse updatedUser = userService.updateUserAddress(id, address);
+        return ResponseEntity.ok(new ResponseData<>(200, "User address updated successfully", null));
+    }
 
 
 }
