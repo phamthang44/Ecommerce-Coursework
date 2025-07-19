@@ -136,6 +136,7 @@ public class ProductServiceImpl implements ProductService {
         return products.stream().map(this::convertToResponse).toList();
     }
 
+    @Transactional
     @Override
     public ProductResponseDTO updateProduct(Long productId, ProductRequestPostDTO dto) {
         if (dto == null) {
@@ -193,6 +194,7 @@ public class ProductServiceImpl implements ProductService {
         return product.getStockStatus();
     }
 
+    @Transactional
     @Override
     public ProductResponseDTO updateProductStockStatus(Long productId, ProductStockUpdatePatchDTO dto) {
         if (dto == null) {
@@ -229,6 +231,7 @@ public class ProductServiceImpl implements ProductService {
         return convertToResponse(productRepository.save(product));
     }
 
+    @Transactional
     @Override
     public ProductResponseDTO createProduct(ProductRequestPostDTO dto) {
 
@@ -309,6 +312,7 @@ public class ProductServiceImpl implements ProductService {
                 .build();
     }
 
+    @Transactional
     @Override
     public ProductResponseDTO updateProductAssetPrimary(Long productId, MultipartFile file) {
         Product product = productRepository.getProductById(productId);
@@ -365,6 +369,7 @@ public class ProductServiceImpl implements ProductService {
         return null;
     }
 
+    @Transactional
     @Override
     public ProductResponseDTO uploadProductAssets(Long productId, List<MultipartFile> files) {
         if (files == null || files.isEmpty()) {
@@ -410,7 +415,7 @@ public class ProductServiceImpl implements ProductService {
         Pageable pageable = PageRequest.of(page, pageSize);
 
         List<Product> products = productRepository.findByNameContainingIgnoreCaseAndDeletedFalse(keyword, pageable);
-        System.out.println("Search keyword: " + products);
+        System.out.println("Search keyword: " + products.toString());
         if (products.isEmpty()) {
             log.warn("No products found with keyword: {}", keyword);
             return PageResponse.<ProductResponseDTO>builder()

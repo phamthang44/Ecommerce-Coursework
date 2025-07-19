@@ -89,20 +89,15 @@ public class UserServiceImpl implements UserService {
         user.setPassword(encodedPassword);
         user.setRole(role);
         user.setStatus(UserStatus.ACTIVE);
-        user.saveAddress(null);
         user.setGender(gender);
 
         log.info("Phone number: {}", user.getPhone());
         user.setPhone(phoneNumber);
         log.info("Phone number: {}", user.getPhone());
         user.setDateOfBirth(dateOfBirth);
-//        User savedUser = userRepository.save(user);
-//        Set<Address> addresses = new HashSet<>();
-//        addresses.add(updateAddress(savedUser.getId(), registerRequestDTO.getAddress()));
-//        savedUser.setAddresses(addresses);
 
         Long userId = userRepository.save(user).getId();
-        updateAddress(userId, registerRequestDTO.getAddress());
+        addAddressForUser(userId, registerRequestDTO.getAddress());
         if (userId != null) {
             log.info("User registered successfully with ID: {}", userId);
             try {
@@ -181,7 +176,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void updateAddress(Long userId, String addressLine) {
+    public void addAddressForUser(Long userId, String addressLine) {
         User user = userRepository.findById(userId)
             .orElseThrow(() -> new NotFoundException("User not found with id: " + userId));
         if (addressLine == null || addressLine.trim().isEmpty()) {
@@ -191,15 +186,11 @@ public class UserServiceImpl implements UserService {
         Address address = new Address();
         address.setUserAddress(addressLine.trim());
         address.setCity("Ho Chi Minh City"); // Default city, can be parameterized
-        address.setUser(user);
         address.setCreatedAt(LocalDateTime.now());
         address.setUpdatedAt(LocalDateTime.now());
         address.setCountry("Vietnam"); // Default country, can be parameterized
         address.setPostalCode("700000"); // Default postal code, can be parameterized
-        Set<Address> addresses = user.getAddresses() != null ? user.getAddresses() : new HashSet<>();
-        addresses.add(address);
-        user.setAddresses(addresses);
-
+        user.saveAddress(address);
         userRepository.save(user);
     }
 }

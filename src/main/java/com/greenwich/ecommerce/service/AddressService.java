@@ -8,6 +8,11 @@ import java.util.List;
 
 public interface AddressService {
 
-    void addAddress(AddressRequestDTO addressRequestDTO);
+    AddressResponseDTO addAddress(Long userId, AddressRequestDTO addressRequestDTO);
     List<AddressResponseDTO> getAddresses(Long userId);
+
+    boolean isAddressDuplicate(String addressLine);
+    AddressResponseDTO updateAddress(Long userId, Long addressId, AddressRequestDTO addressRequestDTO);
+
+    AddressResponseDTO setDefaultAddress(Long userId, Long addressId);
 }
