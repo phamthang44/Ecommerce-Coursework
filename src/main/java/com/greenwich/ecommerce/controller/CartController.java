@@ -59,14 +59,7 @@ public class CartController {
         log.info("Updating (reduce product quantity) product id in cart: {}", item.getCartItemId());
         CartResponseDTO updatedProduct = cartService.changeCartItemQuantity(item, user.getId());
 
-        String message;
-        if (item.getQuantity() >= updatedProduct.getCartItems().size()) {
-            message = "Item quantity has been reduced.";
-        } else {
-            message = "Item quantity has been increased.";
-        }
-
-        return ResponseEntity.status(200).body(new ResponseData<>(200, message, updatedProduct));
+        return ResponseEntity.status(200).body(new ResponseData<>(200, "The item quantity has changed", updatedProduct));
     }
 
 //    @DeleteMapping("/items/{productId}")

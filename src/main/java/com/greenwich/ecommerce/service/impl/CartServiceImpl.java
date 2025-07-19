@@ -61,7 +61,7 @@ public class CartServiceImpl implements CartService {
         CartItem existingCartItem = findCartItemByProduct(cart, productId);
 
         if (existingCartItem != null) {
-            int newQuantity = existingCartItem.getQuantity() + 1;
+            int newQuantity = existingCartItem.getQuantity() + quantity;
             existingCartItem.setQuantity(newQuantity);
             log.info("Product with id {} already exists in the cart, updated quantity to {}", productId, quantity);
         }  else {
@@ -97,7 +97,10 @@ public class CartServiceImpl implements CartService {
         if (cartItem.getProduct() != null && cartItem.getProduct().getAssets() != null && !cartItem.getProduct().getAssets().isEmpty()) {
 
             Asset asset = assetService.getAssetByUsageId(cartItem.getProduct().getId());
-
+            if (asset == null) {
+                log.warn("No asset found for product with id: {}", cartItem.getProduct().getId());
+                return assetService.getAssetById(1L).getUrl(); // or a default image URL
+            }
             return asset.getUrl();
         }
         return null; // or a default image URL

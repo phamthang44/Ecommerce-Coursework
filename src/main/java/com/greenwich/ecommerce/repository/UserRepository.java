@@ -1,5 +1,6 @@
 package com.greenwich.ecommerce.repository;
 
+import com.greenwich.ecommerce.entity.Address;
 import com.greenwich.ecommerce.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;

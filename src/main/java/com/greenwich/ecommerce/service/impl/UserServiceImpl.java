@@ -8,6 +8,7 @@ import com.greenwich.ecommerce.common.mapper.UserMapper;
 import com.greenwich.ecommerce.dto.request.RegisterRequestDTO;
 
 import com.greenwich.ecommerce.dto.response.UserDetailsResponse;
+import com.greenwich.ecommerce.entity.Address;
 import com.greenwich.ecommerce.entity.Role;
 import com.greenwich.ecommerce.entity.User;
 import com.greenwich.ecommerce.exception.*;
@@ -23,6 +24,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 @Service
 @Slf4j
@@ -92,7 +96,13 @@ public class UserServiceImpl implements UserService {
         user.setPhone(phoneNumber);
         log.info("Phone number: {}", user.getPhone());
         user.setDateOfBirth(dateOfBirth);
+//        User savedUser = userRepository.save(user);
+//        Set<Address> addresses = new HashSet<>();
+//        addresses.add(updateAddress(savedUser.getId(), registerRequestDTO.getAddress()));
+//        savedUser.setAddresses(addresses);
+
         Long userId = userRepository.save(user).getId();
+        updateAddress(userId, registerRequestDTO.getAddress());
         if (userId != null) {
             log.info("User registered successfully with ID: {}", userId);
             try {
@@ -168,5 +178,28 @@ public class UserServiceImpl implements UserService {
                     log.error("User not found with id: {}", userId);
                     return new NotFoundException("User not found with id: " + userId);
                 });
+    }
+
+    @Override
+    public void updateAddress(Long userId, String addressLine) {
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new NotFoundException("User not found with id: " + userId));
+        if (addressLine == null || addressLine.trim().isEmpty()) {
+            log.error("Address line cannot be null or empty");
+            throw new BadRequestException("Address line cannot be null or empty");
+        }
+        Address address = new Address();
+        address.setUserAddress(addressLine.trim());
+        address.setCity("Ho Chi Minh City"); // Default city, can be parameterized
+        address.setUser(user);
+        address.setCreatedAt(LocalDateTime.now());
+        address.setUpdatedAt(LocalDateTime.now());
+        address.setCountry("Vietnam"); // Default country, can be parameterized
+        address.setPostalCode("700000"); // Default postal code, can be parameterized
+        Set<Address> addresses = user.getAddresses() != null ? user.getAddresses() : new HashSet<>();
+        addresses.add(address);
+        user.setAddresses(addresses);
+
+        userRepository.save(user);
     }
 }
