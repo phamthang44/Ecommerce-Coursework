@@ -95,7 +95,6 @@ public class CartServiceImpl implements CartService {
 
     private String getCartItemAssetUrl(CartItem cartItem) {
         if (cartItem.getProduct() != null && cartItem.getProduct().getAssets() != null && !cartItem.getProduct().getAssets().isEmpty()) {
-
             Asset asset = assetService.getAssetByUsageId(cartItem.getProduct().getId());
             if (asset == null) {
                 log.warn("No asset found for product with id: {}", cartItem.getProduct().getId());
@@ -144,7 +143,7 @@ public class CartServiceImpl implements CartService {
         return cartRepository.save(cart);
     }
 
-    private Cart getOrCreateCart(Long userId) {
+    public Cart getOrCreateCart(Long userId) {
         Cart cart = cartRepository.getByUserId(userId);
         if (cart == null) {
             log.info("No cart found for user id: {}, creating a new one", userId);

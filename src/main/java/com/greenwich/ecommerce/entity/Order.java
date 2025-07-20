@@ -1,6 +1,5 @@
 package com.greenwich.ecommerce.entity;
 
-import com.greenwich.ecommerce.common.enums.OrderStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -26,6 +25,13 @@ public class Order extends AbstractEntity implements SoftDeletable {
     // List of the product in the order
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItem> orderItems = new ArrayList<>();
+
+    @Column(name = "total_amount")
+    private int total_amount;
+
+    @ManyToOne
+    @JoinColumn(name = "csr_id", nullable = false)
+    private User csr;
 
     @ManyToOne
     @JoinColumn(name = "address_id", nullable = false)
@@ -59,5 +65,4 @@ public class Order extends AbstractEntity implements SoftDeletable {
     public void setDeleted(boolean deleted) {
         this.deleted = deleted;
     }
-
 }

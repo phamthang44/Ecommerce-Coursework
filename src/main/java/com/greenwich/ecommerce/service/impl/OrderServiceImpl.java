@@ -107,7 +107,7 @@ public class OrderServiceImpl {
                 .map(item -> item.getProduct().getPrice().multiply(BigDecimal.valueOf(item.getQuantity())))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
         order.setTotalPrice(totalPrice);
-        com.greenwich.ecommerce.common.enums.OrderStatus orderStatus = com.greenwich.ecommerce.common.enums.OrderStatus.PENDING;
+        com.greenwich.ecommerce.common.enums.OrderStatusType orderStatus = com.greenwich.ecommerce.common.enums.OrderStatusType.PENDING;
         order.setOrderDate(LocalDateTime.now());
         order.setCreatedAt(LocalDateTime.now());
         order.setUpdatedAt(LocalDateTime.now());

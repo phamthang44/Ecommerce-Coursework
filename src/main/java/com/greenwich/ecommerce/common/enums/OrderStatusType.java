@@ -2,7 +2,7 @@ package com.greenwich.ecommerce.common.enums;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public enum OrderStatus {
+public enum OrderStatusType {
     @JsonProperty("pending")
     PENDING,
     @JsonProperty("confirmed")

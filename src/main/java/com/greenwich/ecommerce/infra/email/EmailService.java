@@ -1,22 +1,20 @@
 package com.greenwich.ecommerce.infra.email;
 
 import com.greenwich.ecommerce.dto.response.EmailConfirmResponse;
-import com.greenwich.ecommerce.dto.response.OrderItemResponseDTO;
-import com.greenwich.ecommerce.entity.Order;
 import com.greenwich.ecommerce.entity.OrderItem;
+import com.greenwich.ecommerce.entity.Payment;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.List;
 
-@Component
+@Service
 public class EmailService {
 
     private final JavaMailSender mailSender;
@@ -370,28 +368,26 @@ public class EmailService {
     }
 
 
-    public void sendReceiptEmail(Order order) throws MessagingException {
+    public void sendReceiptEmail(Payment payment) throws MessagingException {
         String orderId = "CD-2025-001234"; //hardcoded for demo
         String orderDate = "July 19, 2025"; //hardcoded for demo
         String estimatedDelivery = "July 23, 2025"; //hardcoded for demo
         String billingAddress = """
-                John Doe
-                123 Main Street
-                District 1, Ho Chi Minh City
-                Vietnam 70000
+                John Doe </br>
+                123 Main Street </br>
+                District 1, Ho Chi Minh City </br>
+                Vietnam 70000 </br>
                 """;
         String shippingAddress = """
-                John Doe
-                456 Nguyen Trai Street
-                District 5, Ho Chi Minh City
-                Vietnam 70000
+                John Doe </br>
+                456 Nguyen Trai Street </br>
+                District 5, Ho Chi Minh City </br>
+                Vietnam 70000 </br>
                 """;
-        StringBuilder itemTable = getStringBuilder(order);
-        BigDecimal subTotal = order.getTotalPrice();
-        BigDecimal discount = subTotal.multiply(BigDecimal.valueOf(0.15));
-        BigDecimal totalPaid = subTotal.subtract(discount);
-
-
+        StringBuilder itemTable = getStringBuilder(payment);
+        BigDecimal subTotal = payment.getOrder().getTotalPrice(); //note cho nay la total price chua giam gia
+        BigDecimal discount = payment.getOrder().getDiscountApplied();
+        BigDecimal totalPaid = payment.getAmount();
 
         String totalSection = generateTotalSection(
                 String.format("$%.2f", subTotal),
@@ -821,14 +817,14 @@ public class EmailService {
         MimeMessage message = mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
         helper.setFrom(fromEmail);
-        helper.setTo(order.getUser().getEmail());
+        helper.setTo(payment.getUser().getEmail());
         helper.setSubject("Your Order Receipt - CheapDeals.com");
         helper.setText(formattedHtmlContent, true);
         mailSender.send(message);
     }
 
-    private StringBuilder getStringBuilder(Order order) {
-        List<OrderItem> items = order.getOrderItems(); // Assuming this is a list of items in the order
+    private StringBuilder getStringBuilder(Payment payment) {
+        List<OrderItem> items = payment.getOrder().getOrderItems(); // Assuming this is a list of items in the order
         StringBuilder itemTable = new StringBuilder();
 
         for (OrderItem item : items) {
