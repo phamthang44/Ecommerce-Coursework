@@ -32,7 +32,7 @@ cloudinary:
 
 open:
   api:
-    serverUrl: http://localhost:${server.port}
+    serverUrl: http://${RADMIN_IP}:${server.port}
     title: API Service for Development Environment
     version: v1.0.0
     serverName: server API for development in Scrum project

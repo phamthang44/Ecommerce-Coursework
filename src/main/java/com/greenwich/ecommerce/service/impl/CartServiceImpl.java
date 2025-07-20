@@ -99,7 +99,7 @@ public class CartServiceImpl implements CartService {
             Asset asset = assetService.getAssetByUsageId(cartItem.getProduct().getId());
             if (asset == null) {
                 log.warn("No asset found for product with id: {}", cartItem.getProduct().getId());
-                return assetService.getAssetById(1L).getUrl(); // or a default image URL
+                return assetService.getAssetById(2L).getUrl(); // or a default image URL
             }
             return asset.getUrl();
         }
@@ -248,7 +248,7 @@ public class CartServiceImpl implements CartService {
 
         List<CartItem> cartItems = cartItemRepository.findAllById(items.getCartItemIds());
         for (CartItem item : cartItems) {
-            if (isCartItemBelongToUser(userId, item)) {
+            if (!isCartItemBelongToUser(userId, item)) {
                 log.error("Remove cart items : Cart item with id {} does not belong to user {}", item.getId(), userId);
                 throw new UnauthorizedException("You do not have permission to delete this cart item");
             }
