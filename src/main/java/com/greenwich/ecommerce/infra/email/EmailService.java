@@ -385,8 +385,8 @@ public class EmailService {
                 Vietnam 70000 </br>
                 """;
         StringBuilder itemTable = getStringBuilder(payment);
-        BigDecimal subTotal = payment.getOrder().getTotalPrice(); //note cho nay la total price chua giam gia
-        BigDecimal discount = payment.getOrder().getDiscountApplied();
+        Double subTotal = payment.getOrder().getTotalPrice(); //note cho nay la total price chua giam gia
+        Double discount = payment.getOrder().getDiscountApplied();
         BigDecimal totalPaid = payment.getAmount();
 
         String totalSection = generateTotalSection(

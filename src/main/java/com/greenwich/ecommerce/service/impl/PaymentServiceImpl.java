@@ -1,5 +1,6 @@
 package com.greenwich.ecommerce.service.impl;
 
+import com.greenwich.ecommerce.common.enums.OrderStatusType;
 import com.greenwich.ecommerce.common.enums.PaymentStatusType;
 import com.greenwich.ecommerce.common.util.Util;
 import com.greenwich.ecommerce.dto.request.CreatePaymentInput;
@@ -10,6 +11,7 @@ import com.greenwich.ecommerce.exception.BadRequestException;
 import com.greenwich.ecommerce.exception.InvalidDataException;
 import com.greenwich.ecommerce.exception.UnauthorizedException;
 import com.greenwich.ecommerce.repository.OrderRepository;
+import com.greenwich.ecommerce.repository.OrderStatusRepository;
 import com.greenwich.ecommerce.repository.PaymentRepository;
 import com.greenwich.ecommerce.repository.PaymentStatusRepository;
 import com.greenwich.ecommerce.service.PaymentService;
@@ -39,13 +41,12 @@ public class PaymentServiceImpl implements PaymentService {
     private final OrderRepository orderRepository;
     private final UserService userService;
     private final PaymentValidator paymentValidator;
+    private final OrderStatusRepository orderStatusRepository;
 
     @Override
     @Transactional
     public PaymentCreateResponse createPayment(CreatePaymentInput input, Long userId) {
         paymentValidator.validatePaymentInputRequest(input, userId);
-
-
 
         log.info("Creating payment for order ID: {}, amount: {}", input.getOrderId(), input.getAmount());
         String visaCheckReference = generateVisaCheckReference(input.getOrderId(), input.getAmount());
@@ -115,7 +116,8 @@ public class PaymentServiceImpl implements PaymentService {
 
         if (isSuccess) {
             Order order = payment.getOrder();
-            order.setOrderStatus(1L); //PAID
+            OrderStatus orderStatus = orderStatusRepository.findByOrderStatusName(OrderStatusType.PAID);
+            order.setOrderStatus(orderStatus);
             orderRepository.save(order);
         }
 
