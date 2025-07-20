@@ -27,6 +27,13 @@ public class Order extends AbstractEntity implements SoftDeletable {
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItem> orderItems = new ArrayList<>();
 
+    @Column(name = "total_amount")
+    private int total_amount;
+
+    @ManyToOne
+    @JoinColumn(name = "csr_id", nullable = false)
+    private User csr;
+
     @ManyToOne
     @JoinColumn(name = "address_id", nullable = false)
     private Address address;
@@ -59,5 +66,4 @@ public class Order extends AbstractEntity implements SoftDeletable {
     public void setDeleted(boolean deleted) {
         this.deleted = deleted;
     }
-
 }

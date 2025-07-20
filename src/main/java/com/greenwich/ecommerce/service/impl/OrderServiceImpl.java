@@ -1,11 +1,15 @@
 package com.greenwich.ecommerce.service.impl;
 
 import com.greenwich.ecommerce.dto.request.OrderItemRequestDTO;
+import com.greenwich.ecommerce.dto.request.OrderRequestDTO;
 import com.greenwich.ecommerce.dto.response.OrderItemResponseDTO;
 import com.greenwich.ecommerce.dto.response.OrderResponseDTO;
 import com.greenwich.ecommerce.entity.*;
+import com.greenwich.ecommerce.repository.AddressRepository;
 import com.greenwich.ecommerce.repository.CartRepository;
 import com.greenwich.ecommerce.repository.OrderRepository;
+import com.greenwich.ecommerce.repository.OrderItemRepository;
+import com.greenwich.ecommerce.repository.CartItemRepository;
 import com.greenwich.ecommerce.service.CartService;
 import com.greenwich.ecommerce.service.CategoryService;
 import com.greenwich.ecommerce.service.ProductService;
@@ -31,6 +35,10 @@ public class OrderServiceImpl {
     private final CartService cartService;
     private final CartRepository cartRepository;
     private final ProductService productService;
+    private final AddressRepository addressRepository;
+    private final OrderItemRepository orderItemRepository;
+    private final CartItemRepository cartItemRepository;
+
 
     // lay tat ca order cua 1 thang user
     public OrderResponseDTO getOrderByUserId(Long userId) {
@@ -56,7 +64,7 @@ public class OrderServiceImpl {
                         .name(orderItem.getProduct().getName())
                         .quantity(orderItem.getQuantity())
                         .price(orderItem.getProduct().getPrice())
-                        .subTotalPrice(orderItem.getProduct().getPrice().multiply(BigDecimal.valueOf(orderItem.getQuantity()))) // neu minh phai tu tinh chu kh nho front end gui ve
+                        .subTotalPrice(orderItem.getProduct().getPrice().multiply(BigDecimal.valueOf(orderItem.getQuantity())))
                         .assetUrl(getOrderItemAssetUrl(orderItem))
                         .build())
         .toList());
@@ -74,10 +82,11 @@ public class OrderServiceImpl {
         return null;
     }
 
-    public OrderResponseDTO makeOrder(Long userId) {
+    public OrderResponseDTO createOrderWithAllItems(Long userId) {
         log.info("Making order for user id: {}", userId);
 
         Cart cart = cartRepository.getByUserId(userId);
+
         if (cart == null) {
             log.error("Cart not found for user id: {}", userId);
             throw new RuntimeException("Cart not found for user id: " + userId);
@@ -87,11 +96,8 @@ public class OrderServiceImpl {
         order.setUser(userService.getUserById(userId));
         order.setOrderItems(new ArrayList<>());
 
-
         Category category = categoryService.getCategoryEntityById(1L);
 
-        // Vòng lặp lấy các cart item / cần 1 cái vòng lặp hoặc nhận 1 list các item khác để làm logic chỉ nhận 1 vài item thôi, khi nào thảo luận xong làm tiếp
-        // chọn lọc theo id nhận
         for (CartItem cartItem : cart.getCartItems()) {
             OrderItem orderItem = new OrderItem();
             log.info("Adding product with id {} to cart for user {}", cartItem.getId(), userId);
@@ -107,6 +113,56 @@ public class OrderServiceImpl {
                 .map(item -> item.getProduct().getPrice().multiply(BigDecimal.valueOf(item.getQuantity())))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
         order.setTotalPrice(totalPrice);
+
+        setOrderDetail(order);
+
+        return getOrderResponseDTO(orderRepository.save(order));
+    }
+
+    // nếu customer kh phải người sở hữu thì kh làm gì được
+    // Phải có vailidate chỗ này
+
+    public OrderResponseDTO createOrderWithSelectedItems(OrderItemRequestDTO items ,Long userId) {
+        log.info("Making order for user id: {} with items: {}", userId, items.getCartItemIds().toString());
+
+        List<CartItem> selectedCartItems = cartItemRepository.findAllById(items.getCartItemIds());
+
+        List<OrderItem> orderItems = new ArrayList<>();
+//        for(OrderItem orderItem : orderItems ) {
+//            if (!isOrderItemBelongToUser(orderItem.get))
+//        }
+
+
+        Order order = new Order();
+        Category category = categoryService.getCategoryEntityById(1L);
+
+        order.setUser(userService.getUserById(userId));
+
+        for (CartItem cartItem : selectedCartItems) {
+            OrderItem orderItem = new OrderItem();
+            orderItem.setProduct(cartItem.getProduct());
+            orderItem.setQuantity(cartItem.getQuantity());
+            orderItem.setPrice(cartItem.getProduct().getPrice()); // get from product
+            orderItem.setCategory(cartItem.getProduct().getCategory());
+            orderItem.setOrder(order);
+            orderItems.add(orderItem);
+        }
+        order.setOrderItems(orderItems);
+
+        BigDecimal totalPrice = orderItems.stream()
+                .map(item -> item.getProduct().getPrice().multiply(BigDecimal.valueOf(item.getQuantity())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        order.setTotalPrice(totalPrice);
+
+        setOrderDetail(order);
+
+        Order savedOrder = orderRepository.save(order);
+        return getOrderResponseDTO(savedOrder);
+    }
+
+    // Thằng này để set order nhưng mà hard code
+    private void setOrderDetail(Order order) {
         com.greenwich.ecommerce.common.enums.OrderStatus orderStatus = com.greenwich.ecommerce.common.enums.OrderStatus.PENDING;
         order.setOrderDate(LocalDateTime.now());
         order.setCreatedAt(LocalDateTime.now());
@@ -114,7 +170,18 @@ public class OrderServiceImpl {
         order.setDiscountApplied(BigDecimal.ZERO);
         order.setOrderStatus(1L); // or orderStatusService.getStatus("PENDING")
 //        order.setOrderChannel() // Hardcode nhưng mà chưa implement
+        order.setCsr(userService.getUserById(2L)); // hard code lay id so 2
 
-        return getOrderResponseDTO(orderRepository.save(order));
+        Address address = addressRepository.getReferenceById(1L);
+        order.setAddress(address);
+        order.setTotal_amount(1);
+    }
+
+    private boolean isOrderBelongToUser(Order order, Long userId) {
+        return orderItemRepository.existsByIdAndOrderUserId(order.getId(),userId);
+    }
+
+    private boolean isOrderItemBelongToUser(OrderItem orderItem, Long userId) {
+        return orderItemRepository.existsByIdAndOrderUserId(orderItem.getId(),userId);
     }
 }
