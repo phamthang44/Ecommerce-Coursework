@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/address")
 @RequiredArgsConstructor
 @Slf4j
-@Tag(name = "Address Management", description = "Endpoints for managing address in user account")
+@Tag(name = "Address Management", description = "Endpoints for managing address in user account including adding, updating, and setting default address")
 public class AddressController {
 
     private final AddressService addressService;

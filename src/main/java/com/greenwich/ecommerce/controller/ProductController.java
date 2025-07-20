@@ -155,7 +155,7 @@ public class ProductController {
     }
 
     @PatchMapping(value = "/{id}/assets", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @Operation(method= "PATCH", summary="Update a product's assets", description="This API endpoint allows you to update a product's assets by ID. (ADMIN)")
+    @Operation(method= "PATCH", summary="Upload a product's assets", description="This API endpoint allows you to upload a product's assets by ID. (ADMIN)")
     public ResponseEntity<ResponseData<ProductResponseDTO>> updateProductAssets(
             @PathVariable("id") @Min(1) Long id,
             @Parameter(
@@ -168,7 +168,7 @@ public class ProductController {
             )
             @RequestPart("images") List<MultipartFile> images
     ) {
-        log.info("Updating product assets in controller: with ID: {}", id);
+        log.info("Uploading product assets in controller: with ID: {}", id);
         ProductResponseDTO updatedProduct = productService.uploadProductAssets(id, images);
         return ResponseEntity.status(HttpStatus.OK.value()).body(new ResponseData<>(HttpStatus.OK.value(), "Product assets updated successfully", updatedProduct));
     }

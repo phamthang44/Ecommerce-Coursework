@@ -36,7 +36,7 @@ spring:
 
 open:
   api:
-    serverUrl: http://${RADMIN_IP}:${server.port}
+    serverUrl: https://thang.tail704409.ts.net
     title: API Service for Production Environment
     version: v1.0.0
     serverName: server production

@@ -6,9 +6,11 @@ import com.greenwich.ecommerce.dto.response.ResponseData;
 import com.greenwich.ecommerce.entity.Recipient;
 import com.greenwich.ecommerce.service.RecipientService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,6 +19,8 @@ import java.util.List;
 @RequiredArgsConstructor
 @Slf4j
 @RequestMapping("/api/v1/recipients")
+@Validated
+@Tag(name = "Recipient Management", description = "Endpoints for managing recipients (ADMIN ROLE and CUSTOMER ROLE). This includes adding, retrieving, and listing recipients.")
 public class RecipientController {
 
     private final RecipientService recipientService;
