@@ -5,15 +5,15 @@ import com.greenwich.ecommerce.dto.request.OrderRequestDTO;
 import com.greenwich.ecommerce.dto.response.OrderItemResponseDTO;
 import com.greenwich.ecommerce.dto.response.OrderResponseDTO;
 import com.greenwich.ecommerce.entity.*;
+import com.greenwich.ecommerce.exception.UnauthorizedException;
 import com.greenwich.ecommerce.repository.AddressRepository;
-import com.greenwich.ecommerce.repository.CartRepository;
 import com.greenwich.ecommerce.repository.OrderRepository;
 import com.greenwich.ecommerce.repository.OrderItemRepository;
 import com.greenwich.ecommerce.repository.CartItemRepository;
 import com.greenwich.ecommerce.service.CartService;
 import com.greenwich.ecommerce.service.CategoryService;
-import com.greenwich.ecommerce.service.ProductService;
 import com.greenwich.ecommerce.service.UserService;
+import com.greenwich.ecommerce.service.impl.OrderServiceValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -33,11 +33,11 @@ public class OrderServiceImpl {
     private final AssetService assetService;
     private final UserService userService;
     private final CartService cartService;
-    private final CartRepository cartRepository;
-    private final ProductService productService;
     private final AddressRepository addressRepository;
     private final OrderItemRepository orderItemRepository;
     private final CartItemRepository cartItemRepository;
+    private final CartServiceImpl cartServiceImpl;
+    private final OrderServiceValidator orderServiceValidator;
 
 
     // lay tat ca order cua 1 thang user
@@ -48,7 +48,8 @@ public class OrderServiceImpl {
 
     public OrderResponseDTO getOrderById(Long orderId) {
         log.info("Fetching order with ID: {}", orderId);
-        /* cần validate */
+        orderServiceValidator.validateOrderId(orderId);
+
         Order order = orderRepository.getOrderById(orderId);
 
         return getOrderResponseDTO(order);
@@ -68,7 +69,7 @@ public class OrderServiceImpl {
                         .assetUrl(getOrderItemAssetUrl(orderItem))
                         .build())
         .toList());
-
+        orderResponse.setTotalPrice(order.getTotalPrice());
         return orderResponse;
     }
 
@@ -83,9 +84,10 @@ public class OrderServiceImpl {
     }
 
     public OrderResponseDTO createOrderWithAllItems(Long userId) {
+        orderServiceValidator.validateUserId(userId);
         log.info("Making order for user id: {}", userId);
 
-        Cart cart = cartRepository.getByUserId(userId);
+        Cart cart = cartServiceImpl.getOrCreateCart(userId);
 
         if (cart == null) {
             log.error("Cart not found for user id: {}", userId);
@@ -97,6 +99,11 @@ public class OrderServiceImpl {
         order.setOrderItems(new ArrayList<>());
 
         Category category = categoryService.getCategoryEntityById(1L);
+
+        if (cart.getCartItems() == null || cart.getCartItems().isEmpty()) {
+            log.error("Invalid order request - the cart is empty");
+            throw new IllegalArgumentException("Invalid order request - the cart empty");
+        }
 
         for (CartItem cartItem : cart.getCartItems()) {
             OrderItem orderItem = new OrderItem();
@@ -123,15 +130,18 @@ public class OrderServiceImpl {
     // Phải có vailidate chỗ này
 
     public OrderResponseDTO createOrderWithSelectedItems(OrderItemRequestDTO items ,Long userId) {
+        orderServiceValidator.validateOrderItemRequest(userId, items);
+        for (Long cartItemId : items.getCartItemIds()) {
+            if (!isCartItemBelongToUser(cartItemId, userId)) {
+                log.error("Cart item with id {} does not belong to user {}", cartItemId, userId);
+                throw new UnauthorizedException("You are not allowed to use cart item id: " + cartItemId);
+            }
+        }
         log.info("Making order for user id: {} with items: {}", userId, items.getCartItemIds().toString());
 
         List<CartItem> selectedCartItems = cartItemRepository.findAllById(items.getCartItemIds());
 
         List<OrderItem> orderItems = new ArrayList<>();
-//        for(OrderItem orderItem : orderItems ) {
-//            if (!isOrderItemBelongToUser(orderItem.get))
-//        }
-
 
         Order order = new Order();
         Category category = categoryService.getCategoryEntityById(1L);
@@ -170,7 +180,7 @@ public class OrderServiceImpl {
         order.setDiscountApplied(BigDecimal.ZERO);
         order.setOrderStatus(1L); // or orderStatusService.getStatus("PENDING")
 //        order.setOrderChannel() // Hardcode nhưng mà chưa implement
-        order.setCsr(userService.getUserById(2L)); // hard code lay id so 2
+        order.setCsr(userService.getUserById(2L)); // hard code nen set thang so 2 la admin di
 
         Address address = addressRepository.getReferenceById(1L);
         order.setAddress(address);
@@ -184,4 +194,10 @@ public class OrderServiceImpl {
     private boolean isOrderItemBelongToUser(OrderItem orderItem, Long userId) {
         return orderItemRepository.existsByIdAndOrderUserId(orderItem.getId(),userId);
     }
+
+    // cái này để kiểm tra cartItem trước khi biến thành order Item, t code dơ nên dùng luôn cart repo
+    private boolean isCartItemBelongToUser(Long cartItemId, Long userId) {
+        return cartItemRepository.existsByIdAndCartUserId(cartItemId, userId);
+    }
+
 }

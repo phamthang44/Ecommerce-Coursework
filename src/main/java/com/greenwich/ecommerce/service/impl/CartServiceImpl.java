@@ -144,7 +144,7 @@ public class CartServiceImpl implements CartService {
         return cartRepository.save(cart);
     }
 
-    private Cart getOrCreateCart(Long userId) {
+    public Cart getOrCreateCart(Long userId) {
         Cart cart = cartRepository.getByUserId(userId);
         if (cart == null) {
             log.info("No cart found for user id: {}, creating a new one", userId);

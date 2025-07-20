@@ -27,13 +27,8 @@ public class OrderController {
     @Operation(method= "GET", summary="Get order by ID", description="This API allows you to get an order by its ID")
     public ResponseEntity<ResponseData<OrderResponseDTO>> getOrderById(@PathVariable("orderId") Long orderId) {
 
-        if (orderId == null) {
-            log.error("User ID is null");
-        } else if (orderId < 0) {
-            log.error("User ID is negative");
-        }
-
         OrderResponseDTO order = orderService.getOrderById(orderId);
+
         log.info("Fetching order with ID: {}", orderId);
         return ResponseEntity.ok(new ResponseData<>(200, "Order found!", order));
     }
@@ -41,6 +36,7 @@ public class OrderController {
     @PostMapping()
     @Operation(method= "POST", summary="Create order with all cart Items", description="This API allows you to create an order with all items in cart")
     public ResponseEntity<ResponseData<OrderResponseDTO>> createOrderWithAllItem(@AuthenticationPrincipal SecurityUserDetails user) {
+        log.info("Creating order for user {} with all item in cart", user.getId());
         OrderResponseDTO madeOrder = orderService.createOrderWithAllItems(user.getId());
 
         return ResponseEntity.ok(new ResponseData<>(200, "Order created successfully", madeOrder));
@@ -49,6 +45,7 @@ public class OrderController {
     @PostMapping("/items")
     @Operation(method= "POST", summary="Create order with selected items", description="This API allows you to create an order with selected item's ids in cart")
     public ResponseEntity<ResponseData<OrderResponseDTO>> createOrderWithSelectedItems(@RequestBody OrderItemRequestDTO orderItem, @AuthenticationPrincipal SecurityUserDetails user ) {
+        log.info("Creating order for user {} with selected item", user.getId());
         OrderResponseDTO makeOrder = orderService.createOrderWithSelectedItems(orderItem, user.getId());
 
         return ResponseEntity.ok(new ResponseData<>(200, "Order created successfully", makeOrder));
