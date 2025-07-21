@@ -19,13 +19,13 @@ public class OrderResponseDTO {
 //    private List<OrderItemResponseDTO> orderItems;
     //------ Thanh -------------
 
-    private Long id;
+    private Long orderId;
+    private String customerName;
     private String addressLine;
-    private Long customerId;
-    private Double totalPrice;
+    private BigDecimal totalPrice;
     private LocalDateTime orderDate;
     private BigDecimal totalAmount;
-    private Double discount;
+    private BigDecimal discountApplied;
     private String status;
     private List<OrderItemResponseDTO> orderItems;
 

@@ -45,14 +45,14 @@ public class Order extends AbstractEntity implements SoftDeletable {
     @Column(name = "order_date", nullable = false)
     private LocalDateTime orderDate;
 
-    @Column(name = "total_price", nullable = false)
-    private Double totalPrice;
+    @Column(name = "total_price", nullable = false, precision = 10, scale = 2)
+    private BigDecimal totalPrice;
 
     @Column(name = "total_amount", nullable = false, precision = 10, scale = 2)
     private BigDecimal totalAmount;
 
-    @Column(name = "discount_applied", nullable = false)
-    private Double discountApplied;
+    @Column(name = "discount_applied", nullable = false, precision = 10, scale = 2)
+    private BigDecimal discountApplied;
 
     @Column(name = "is_deleted", nullable = false)
     private boolean deleted = false;

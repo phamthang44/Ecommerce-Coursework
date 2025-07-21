@@ -385,13 +385,13 @@ public class EmailService {
                 Vietnam 70000 </br>
                 """;
         StringBuilder itemTable = getStringBuilder(payment);
-        Double subTotal = payment.getOrder().getTotalPrice(); //note cho nay la total price chua giam gia
-        Double discount = payment.getOrder().getDiscountApplied();
+        BigDecimal subTotal = payment.getOrder().getTotalPrice(); //note cho nay la total price chua giam gia
+        BigDecimal discountApplied = payment.getOrder().getDiscountApplied();
         BigDecimal totalPaid = payment.getAmount();
 
         String totalSection = generateTotalSection(
                 String.format("$%.2f", subTotal),
-                String.format("$%.2f", discount),
+                String.format("$%.2f", discountApplied),
                 String.format("$%.2f", totalPaid)
         );
 

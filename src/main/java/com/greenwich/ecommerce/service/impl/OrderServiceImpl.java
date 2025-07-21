@@ -148,7 +148,25 @@ public class OrderServiceImpl implements OrderService {
                 .findFirst()
                 .orElseThrow(() -> new NotFoundException("Default address not found for user ID: " + userId));
 
+        BigDecimal totalPrice = orderRequestDTO.getItems().stream()
+                .map(item -> {
+                    Product product = productService.getProductEntityById(item.getProductId());
+                    if (product == null) {
+                        throw new NotFoundException("Product not found with ID: " + item.getProductId());
+                    }
+                    return product.getPrice().multiply(BigDecimal.valueOf(item.getQuantity()));
+                })
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        double discountPercent = orderRequestDTO.getDiscountPercent() != null ? orderRequestDTO.getDiscountPercent() : 15.0; // Default discount percent if not provided
+
+        BigDecimal discountAmount = totalPrice.multiply(BigDecimal.valueOf(discountPercent));
+        if (discountAmount.compareTo(totalPrice) > 0) {
+            log.error("Discount amount cannot be greater than total price");
+            throw new InvalidDataException("Discount amount cannot be greater than total price");
+        }
+        BigDecimal totalAmount = totalPrice.subtract(discountAmount);
         order.setUser(user);
+
         order.setOrderItems(orderRequestDTO.getItems().stream()
                 .map(item -> {
                     OrderItem orderItem = new OrderItem();
@@ -161,15 +179,15 @@ public class OrderServiceImpl implements OrderService {
                     return orderItem;
                 }).toList());
         order.setOrderStatus(orderStatusRepository.findByOrderStatusName(OrderStatusType.PENDING));
-        order.setTotalPrice(orderRequestDTO.getTotalPrice());
+        order.setTotalPrice(totalPrice);
         order.setOrderDate(LocalDateTime.now());
-        order.setTotalAmount(orderRequestDTO.getTotalAmount());
-        order.setDiscountApplied(orderRequestDTO.getDiscount());
+        order.setTotalAmount(totalAmount);
+        order.setDiscountApplied(discountAmount);
         order.setOrderChannel(orderChannel);
         order.setAddress(address);
-        order.setCsr(userService.getUserById(2L));
+        order.setCsr(userService.getUserById(2L)); //hardcoded CSR ID, should be replaced with actual logic to get CSR
 
-        return getOrderResponseDTO(orderRepository.save(order));
+        return getOrderResponseDTO(orderRepository.save(order), userId);
     }
 
     private OrderResponseDTO getOrderResponseDTO(Order order) {
@@ -180,9 +198,9 @@ public class OrderServiceImpl implements OrderService {
 
         List<OrderItemResponseDTO> orderItems = order.getOrderItems().stream()
                 .map(item -> OrderItemResponseDTO.builder()
-                        .id(item.getId())
+                        .orderItemId(item.getId())
                         .productId(item.getProduct().getId())
-                        .name(item.getProduct().getName())
+                        .productName(item.getProduct().getName())
                         .quantity(item.getQuantity())
                         .price(item.getPrice())
                         .subTotalPrice(item.getPrice().multiply(BigDecimal.valueOf(item.getQuantity())))
@@ -191,16 +209,24 @@ public class OrderServiceImpl implements OrderService {
                 .toList();
 
         return OrderResponseDTO.builder()
-                .id(order.getId())
+                .orderId(order.getId())
                 .orderItems(orderItems)
                 .totalPrice(order.getTotalPrice())
                 .orderDate(order.getOrderDate())
                 .totalAmount(order.getTotalAmount())
-                .discount(order.getDiscountApplied())
+                .discountApplied(order.getDiscountApplied())
                 .status(String.valueOf(order.getOrderStatus().getStatusName()))
                 .addressLine(order.getAddress().getUserAddress())
-                .customerId(order.getUser().getId())
+                .customerName(order.getUser().getFullName())
                 .build();
+    }
+
+    private OrderResponseDTO getOrderResponseDTO(Order order, Long userId) {
+        if (order == null || !order.getUser().getId().equals(userId)) {
+            log.error("Order not found or does not belong to user ID: {}", userId);
+            throw new UnauthorizedException("Order not found or does not belong to user ID: " + userId);
+        }
+        return getOrderResponseDTO(order);
     }
 
     @Override

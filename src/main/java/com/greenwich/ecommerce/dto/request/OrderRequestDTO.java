@@ -12,13 +12,7 @@ public class OrderRequestDTO implements Serializable{
 
     private Long addressId;
 
-    private LocalDateTime orderDate;
-
-    private BigDecimal totalAmount; //da tru di discount
-
-    private Double discount;
-
-    private Double totalPrice;
+    private Double discountPercent;
 
     private List<OrderItemRequestDTO> items;
 }
