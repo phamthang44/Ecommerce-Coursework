@@ -31,17 +31,17 @@ public class OrderServiceValidator {
         }
     }
 
-    public void validateOrderItemRequest(Long userId, OrderItemRequestDTO orderItemRequestDTO) {
-        validateUserId(userId);
-
-        if (orderItemRequestDTO == null || orderItemRequestDTO.getCartItemIds().isEmpty()) {
-            log.error("Invalid order request - items list is empty");
-            throw new IllegalArgumentException("Invalid order request - items list is empty");
-        }
-
-        if (orderItemRequestDTO.getCartItemIds().stream().anyMatch(id -> id == null || id <= 0)) {
-            log.error("Invalid order request - items list contains invalid IDs");
-            throw new IllegalArgumentException("Invalid order request - items list contains invalid IDs");
-        }
-    }
+//    public void validateOrderItemRequest(Long userId, OrderItemRequestDTO orderItemRequestDTO) {
+//        validateUserId(userId);
+//
+//        if (orderItemRequestDTO == null || orderItemRequestDTO.getCartItemIds().isEmpty()) {
+//            log.error("Invalid order request - items list is empty");
+//            throw new IllegalArgumentException("Invalid order request - items list is empty");
+//        }
+//
+//        if (orderItemRequestDTO.getCartItemIds().stream().anyMatch(id -> id == null || id <= 0)) {
+//            log.error("Invalid order request - items list contains invalid IDs");
+//            throw new IllegalArgumentException("Invalid order request - items list contains invalid IDs");
+//        }
+//    }
 }

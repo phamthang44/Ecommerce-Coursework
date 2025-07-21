@@ -16,5 +16,9 @@ public enum OrderStatusType {
     @JsonProperty("returned")
     RETURNED,
     @JsonProperty("failed")
-    FAILED
+    FAILED,
+    @JsonProperty("refunded")
+    REFUNDED,
+    @JsonProperty("paid")
+    PAID,
 }

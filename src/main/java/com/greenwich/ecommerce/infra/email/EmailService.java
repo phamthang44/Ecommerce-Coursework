@@ -1,5 +1,6 @@
 package com.greenwich.ecommerce.infra.email;
 
+import com.greenwich.ecommerce.common.util.DateFormatterUtil;
 import com.greenwich.ecommerce.dto.response.EmailConfirmResponse;
 import com.greenwich.ecommerce.entity.OrderItem;
 import com.greenwich.ecommerce.entity.Payment;
@@ -370,28 +371,31 @@ public class EmailService {
 
     public void sendReceiptEmail(Payment payment) throws MessagingException {
         String orderId = "CD-2025-001234"; //hardcoded for demo
-        String orderDate = "July 19, 2025"; //hardcoded for demo
+        String orderDate = String.valueOf(payment.getOrder().getOrderDate()); //hardcoded for demo
+        String formatDate = DateFormatterUtil.formatForReceipt(orderDate);
         String estimatedDelivery = "July 23, 2025"; //hardcoded for demo
         String billingAddress = """
-                John Doe </br>
-                123 Main Street </br>
-                District 1, Ho Chi Minh City </br>
-                Vietnam 70000 </br>
+                %s<br>
+                %s<br>
+                %s<br>
+                %s %s
                 """;
-        String shippingAddress = """
-                John Doe </br>
-                456 Nguyen Trai Street </br>
-                District 5, Ho Chi Minh City </br>
-                Vietnam 70000 </br>
-                """;
-        StringBuilder itemTable = getStringBuilder(payment);
+        String shippingAddress = getShippingAddress(payment);
+        String billingAddressFormatted = billingAddress.formatted(
+                payment.getUser().getFullName(),
+                payment.getOrder().getAddress().getUserAddress(),
+                payment.getOrder().getAddress().getCity(),
+                payment.getOrder().getAddress().getCountry(),
+                payment.getOrder().getAddress().getPostalCode()
+        );
+        StringBuilder itemTable = getStringOrderItemBuilder(payment);
         BigDecimal subTotal = payment.getOrder().getTotalPrice(); //note cho nay la total price chua giam gia
-        BigDecimal discount = payment.getOrder().getDiscountApplied();
+        BigDecimal discountApplied = payment.getOrder().getDiscountApplied();
         BigDecimal totalPaid = payment.getAmount();
 
         String totalSection = generateTotalSection(
                 String.format("$%.2f", subTotal),
-                String.format("$%.2f", discount),
+                String.format("$%.2f", discountApplied),
                 String.format("$%.2f", totalPaid)
         );
 
@@ -806,14 +810,14 @@ public class EmailService {
         String formattedHtmlContent = String.format(
                 safeHtmlContent,
                 orderId,
-                orderDate,
+                formatDate,
                 estimatedDelivery,
-                billingAddress,
+                billingAddressFormatted,
                 shippingAddress,
                 itemTable,
                 totalSection
         );
-        
+
         MimeMessage message = mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
         helper.setFrom(fromEmail);
@@ -823,7 +827,25 @@ public class EmailService {
         mailSender.send(message);
     }
 
-    private StringBuilder getStringBuilder(Payment payment) {
+    private String getShippingAddress(Payment payment) {
+        String shippingAddress = """
+                %s<br>
+                %s<br>
+                %s<br>
+                %s %s
+                """;
+
+        return String.format(
+                shippingAddress,
+                payment.getUser().getFullName(),
+                payment.getOrder().getAddress().getUserAddress(),
+                payment.getOrder().getAddress().getCity(),
+                payment.getOrder().getAddress().getCountry(),
+                payment.getOrder().getAddress().getPostalCode()
+        );
+    }
+
+    private StringBuilder getStringOrderItemBuilder(Payment payment) {
         List<OrderItem> items = payment.getOrder().getOrderItems(); // Assuming this is a list of items in the order
         StringBuilder itemTable = new StringBuilder();
 
@@ -833,7 +855,7 @@ public class EmailService {
                     String.valueOf(item.getProduct().getDescription()),
                     item.getQuantity(),
                     String.format("$%.2f", item.getPrice()),
-                    String.format("$%.2f", 10.24)
+                    String.format("$%.2f", item.getSubtotal())
             ));
         }
         return itemTable;

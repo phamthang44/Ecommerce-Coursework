@@ -10,12 +10,13 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @Builder
 public class OrderItemResponseDTO {
-    private Long orderId; // map voi thang Response Order de biet order nao
-    private Long id; // id cua thang order item, phan biet giua cac order item
-    private Long productId; // dung de map qua product
-    private String name;
+
+    private Long orderItemId;
+    private Long productId;
+    private String productName;
     private int quantity;
     private BigDecimal price;
     private BigDecimal subTotalPrice;
     private String assetUrl;
+
 }

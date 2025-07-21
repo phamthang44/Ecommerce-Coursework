@@ -8,5 +8,5 @@ import java.math.BigDecimal;
 @Getter
 public class CreatePaymentInput implements Serializable {
     private Long orderId;
-    private BigDecimal amount;
+    private BigDecimal totalAmount;
 }

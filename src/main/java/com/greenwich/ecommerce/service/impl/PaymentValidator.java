@@ -19,8 +19,8 @@ public class PaymentValidator {
             throw new InvalidDataException("Payment input request cannot be null");
         }
 
-        if (input.getAmount() == null || input.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
-            log.error("Invalid payment amount: {}", input.getAmount());
+        if (input.getTotalAmount() == null || input.getTotalAmount().compareTo(BigDecimal.ZERO) <= 0) {
+            log.error("Invalid payment amount: {}", input.getTotalAmount());
             throw new InvalidDataException("Payment amount must be greater than zero");
         }
 

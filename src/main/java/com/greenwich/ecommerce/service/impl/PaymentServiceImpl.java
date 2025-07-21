@@ -1,5 +1,6 @@
 package com.greenwich.ecommerce.service.impl;
 
+import com.greenwich.ecommerce.common.enums.OrderStatusType;
 import com.greenwich.ecommerce.common.enums.PaymentStatusType;
 import com.greenwich.ecommerce.common.util.Util;
 import com.greenwich.ecommerce.dto.request.CreatePaymentInput;
@@ -10,6 +11,7 @@ import com.greenwich.ecommerce.exception.BadRequestException;
 import com.greenwich.ecommerce.exception.InvalidDataException;
 import com.greenwich.ecommerce.exception.UnauthorizedException;
 import com.greenwich.ecommerce.repository.OrderRepository;
+import com.greenwich.ecommerce.repository.OrderStatusRepository;
 import com.greenwich.ecommerce.repository.PaymentRepository;
 import com.greenwich.ecommerce.repository.PaymentStatusRepository;
 import com.greenwich.ecommerce.service.PaymentService;
@@ -39,16 +41,15 @@ public class PaymentServiceImpl implements PaymentService {
     private final OrderRepository orderRepository;
     private final UserService userService;
     private final PaymentValidator paymentValidator;
+    private final OrderStatusRepository orderStatusRepository;
 
     @Override
     @Transactional
     public PaymentCreateResponse createPayment(CreatePaymentInput input, Long userId) {
         paymentValidator.validatePaymentInputRequest(input, userId);
 
-
-
-        log.info("Creating payment for order ID: {}, amount: {}", input.getOrderId(), input.getAmount());
-        String visaCheckReference = generateVisaCheckReference(input.getOrderId(), input.getAmount());
+        log.info("Creating payment for order ID: {}, amount: {}", input.getOrderId(), input.getTotalAmount());
+        String visaCheckReference = generateVisaCheckReference(input.getOrderId(), input.getTotalAmount());
         log.info("Creating payment with Visa Check Reference: {}", visaCheckReference);
         PaymentStatus paymentStatus = paymentStatusRepository.findByPaymentStatus(PaymentStatusType.PENDING);
         User user = userService.getUserById(userId);
@@ -59,14 +60,14 @@ public class PaymentServiceImpl implements PaymentService {
             throw new UnauthorizedException("Unauthorized user for payment of order ID: " + input.getOrderId());
         }
 
-        if (!Objects.equals(input.getAmount(), order.getTotalPrice())) {
-            throw new BadRequestException("Payment amount does not match order total price.");
+        if (!Objects.equals(input.getTotalAmount(), order.getTotalAmount())) {
+            throw new BadRequestException("Payment amount does not match order total amount.");
         }
 
         Payment payment = new Payment();
         payment.setUser(user);
         payment.setOrder(order);
-        payment.setAmount(input.getAmount());
+        payment.setAmount(input.getTotalAmount());
         payment.setPaymentDate(LocalDateTime.now());
         payment.setStatus(paymentStatus);
         payment.setVisaCheckReference(visaCheckReference);
@@ -115,7 +116,8 @@ public class PaymentServiceImpl implements PaymentService {
 
         if (isSuccess) {
             Order order = payment.getOrder();
-            order.setOrderStatus(1L); //PAID
+            OrderStatus orderStatus = orderStatusRepository.findByOrderStatusName(OrderStatusType.PAID);
+            order.setOrderStatus(orderStatus);
             orderRepository.save(order);
         }
 
@@ -164,7 +166,10 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     public Payment getPaymentById(Long id) {
-        return null;
+
+        return paymentRepository.findById(id)
+                .orElseThrow(() -> new InvalidDataException("Payment not found with ID: " + id));
+
     }
 
     private PaymentResponse convertToPaymentResponse(Payment payment) {
