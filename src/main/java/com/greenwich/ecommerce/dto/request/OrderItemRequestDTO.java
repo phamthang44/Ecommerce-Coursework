@@ -10,6 +10,9 @@ import java.util.List;
 @Getter
 public class OrderItemRequestDTO implements Serializable {
 
+    @NotNull(message = "Order item cannot be null")
+    private Long cartItemId;
+
     @NotNull(message = "Product ID is required")
     @Min(value = 1, message = "Product ID must be greater than or equal to 1")
     private Long productId;

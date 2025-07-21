@@ -39,7 +39,7 @@ public class OrderController {
 //    @Operation(method= "POST", summary="Create order with all cart Items", description="This API allows you to create an order with all items in cart")
 //    public ResponseEntity<ResponseData<OrderResponseDTO>> createOrderWithAllItem(@AuthenticationPrincipal SecurityUserDetails user) {
 //        log.info("Creating order for user {} with all item in cart", user.getId());
-////        OrderResponseDTO madeOrder = orderService.createOrderWithAllItems(user.getId());
+//       OrderResponseDTO madeOrder = orderService.createOrderWithAllItems(user.getId());
 //
 //        return ResponseEntity.ok(new ResponseData<>(200, "Order created successfully", null));
 //    }
@@ -48,7 +48,7 @@ public class OrderController {
 //    @Operation(method= "POST", summary="Create order with selected items", description="This API allows you to create an order with selected item's ids in cart")
 //    public ResponseEntity<ResponseData<OrderResponseDTO>> createOrderWithSelectedItems(@RequestBody OrderItemRequestDTO orderItem, @AuthenticationPrincipal SecurityUserDetails user ) {
 //        log.info("Creating order for user {} with selected item", user.getId());
-////        OrderResponseDTO makeOrder = orderService.createOrderWithSelectedItems(orderItem, user.getId());
+//       OrderResponseDTO makeOrder = orderService.createOrderWithSelectedItems(orderItem, user.getId());
 //
 //        return ResponseEntity.ok(new ResponseData<>(200, "Order created successfully", null));
 //    }

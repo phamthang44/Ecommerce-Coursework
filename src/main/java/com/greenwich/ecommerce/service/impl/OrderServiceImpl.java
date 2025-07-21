@@ -9,7 +9,6 @@ import com.greenwich.ecommerce.entity.*;
 import com.greenwich.ecommerce.exception.InvalidDataException;
 import com.greenwich.ecommerce.exception.NotFoundException;
 import com.greenwich.ecommerce.exception.UnauthorizedException;
-import com.greenwich.ecommerce.repository.CartRepository;
 import com.greenwich.ecommerce.repository.OrderChannelRepository;
 import com.greenwich.ecommerce.repository.OrderRepository;
 import com.greenwich.ecommerce.repository.OrderStatusRepository;
@@ -19,9 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -132,6 +129,21 @@ public class OrderServiceImpl implements OrderService {
             throw new InvalidDataException("Order request or items cannot be null or empty");
         }
 
+        List<OrderItemRequestDTO> cartItemId = orderRequestDTO.getItems();
+        cartItemId.forEach(cartItem -> {
+            if (cartItem.getProductId() == null || cartItem.getProductId() <= 0) {
+                log.error("Invalid product ID in order request: {}", cartItem.getProductId());
+                throw new InvalidDataException("Invalid product ID in order request: " + cartItem.getProductId());
+            }
+            if (cartItem.getQuantity() == null || cartItem.getQuantity() <= 0) {
+                log.error("Invalid quantity in order request: {}", cartItem.getQuantity());
+                throw new InvalidDataException("Invalid quantity in order request: " + cartItem.getQuantity());
+            }
+            log.info("Validate cart item id : {}", cartItem.getCartItemId());
+            log.info("Validating cart item with product ID: {} and quantity: {}", cartItem.getProductId(), cartItem.getQuantity());
+            cartService.removeCartItemFromCart(cartItem.getCartItemId(), userId);
+        });
+
         log.info("Creating order for user ID: {}", userId);
         User user = userService.getUserById(userId);
         if (user == null) {
@@ -207,7 +219,6 @@ public class OrderServiceImpl implements OrderService {
                         .quantity(item.getQuantity())
                         .price(item.getPrice())
                         .subTotalPrice(item.getPrice().multiply(BigDecimal.valueOf(item.getQuantity())))
-                        .assetUrl(assetService.getAssetByUsageId(item.getProduct().getId()).getUrl())
                         .build())
                 .toList();
 

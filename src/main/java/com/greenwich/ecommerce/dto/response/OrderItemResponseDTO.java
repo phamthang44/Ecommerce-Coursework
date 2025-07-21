@@ -17,6 +17,5 @@ public class OrderItemResponseDTO {
     private int quantity;
     private BigDecimal price;
     private BigDecimal subTotalPrice;
-    private String assetUrl;
 
 }
