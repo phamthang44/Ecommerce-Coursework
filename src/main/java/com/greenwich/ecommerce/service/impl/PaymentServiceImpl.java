@@ -48,8 +48,8 @@ public class PaymentServiceImpl implements PaymentService {
     public PaymentCreateResponse createPayment(CreatePaymentInput input, Long userId) {
         paymentValidator.validatePaymentInputRequest(input, userId);
 
-        log.info("Creating payment for order ID: {}, amount: {}", input.getOrderId(), input.getAmount());
-        String visaCheckReference = generateVisaCheckReference(input.getOrderId(), input.getAmount());
+        log.info("Creating payment for order ID: {}, amount: {}", input.getOrderId(), input.getTotalAmount());
+        String visaCheckReference = generateVisaCheckReference(input.getOrderId(), input.getTotalAmount());
         log.info("Creating payment with Visa Check Reference: {}", visaCheckReference);
         PaymentStatus paymentStatus = paymentStatusRepository.findByPaymentStatus(PaymentStatusType.PENDING);
         User user = userService.getUserById(userId);
@@ -60,14 +60,14 @@ public class PaymentServiceImpl implements PaymentService {
             throw new UnauthorizedException("Unauthorized user for payment of order ID: " + input.getOrderId());
         }
 
-        if (!Objects.equals(input.getAmount(), order.getTotalPrice())) {
-            throw new BadRequestException("Payment amount does not match order total price.");
+        if (!Objects.equals(input.getTotalAmount(), order.getTotalAmount())) {
+            throw new BadRequestException("Payment amount does not match order total amount.");
         }
 
         Payment payment = new Payment();
         payment.setUser(user);
         payment.setOrder(order);
-        payment.setAmount(input.getAmount());
+        payment.setAmount(input.getTotalAmount());
         payment.setPaymentDate(LocalDateTime.now());
         payment.setStatus(paymentStatus);
         payment.setVisaCheckReference(visaCheckReference);
@@ -166,7 +166,10 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     public Payment getPaymentById(Long id) {
-        return null;
+
+        return paymentRepository.findById(id)
+                .orElseThrow(() -> new InvalidDataException("Payment not found with ID: " + id));
+
     }
 
     private PaymentResponse convertToPaymentResponse(Payment payment) {

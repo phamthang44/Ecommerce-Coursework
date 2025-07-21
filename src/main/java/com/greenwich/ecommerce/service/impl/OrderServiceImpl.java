@@ -148,6 +148,8 @@ public class OrderServiceImpl implements OrderService {
                 .findFirst()
                 .orElseThrow(() -> new NotFoundException("Default address not found for user ID: " + userId));
 
+
+
         BigDecimal totalPrice = orderRequestDTO.getItems().stream()
                 .map(item -> {
                     Product product = productService.getProductEntityById(item.getProductId());
@@ -175,6 +177,7 @@ public class OrderServiceImpl implements OrderService {
                     orderItem.setQuantity(item.getQuantity());
                     orderItem.setPrice(orderItem.getProduct().getPrice());
                     orderItem.setCategory(product.getCategory());
+                    orderItem.setSubtotal(orderItem.getProduct().getPrice().multiply(BigDecimal.valueOf(item.getQuantity())));
                     orderItem.setOrder(order);
                     return orderItem;
                 }).toList());
