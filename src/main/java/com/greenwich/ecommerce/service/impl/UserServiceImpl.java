@@ -155,9 +155,14 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("User not found with id: " + userId));
 
+        Address address = user.getAddresses().stream()
+                .filter(Address::isDefault)
+                .findFirst()
+                .orElseThrow(() -> new NotFoundException("Address not found for user with id: " + userId));
+
         return UserDetailsResponse.builder()
                 .id(user.getId())
-                .address(user.getAddresses().toString())
+                .address(address.getUserAddress())
                 .email(user.getEmail())
                 .username(user.getUsername())
                 .fullName(user.getFullName())

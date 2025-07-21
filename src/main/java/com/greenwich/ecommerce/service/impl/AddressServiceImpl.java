@@ -131,4 +131,15 @@ public class AddressServiceImpl implements AddressService {
         // Return the updated address
         return addressMapper.toAddressResponseDTO(addressRepository.save(address));
     }
+
+    @Override
+    public AddressResponseDTO getDefaultAddress(Long userId) {
+        User user = userService.getUserById(userId);
+        Address defaultAddress = user.getAddresses().stream()
+                .filter(Address::isDefault)
+                .findFirst()
+                .orElseThrow(() -> new InvalidDataException("No default address found for user with ID: " + userId));
+
+        return addressMapper.toAddressResponseDTO(defaultAddress);
+    }
 }

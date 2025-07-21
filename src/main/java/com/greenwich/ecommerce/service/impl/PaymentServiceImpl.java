@@ -106,7 +106,9 @@ public class PaymentServiceImpl implements PaymentService {
     public boolean validateAndUpdatePaymentStatus(String visaCheckReference) {
         Payment payment = paymentRepository.findByVisaCheckReference(visaCheckReference)
                 .orElseThrow(() -> new RuntimeException("Payment not found"));
-
+        if (!payment.getStatus().equals(paymentStatusRepository.findByPaymentStatus(PaymentStatusType.PENDING))) {
+            throw new BadRequestException("The payment must be followed by right flow!");
+        }
         boolean isSuccess = verifyPayment(visaCheckReference); // Gọi hàm verify
 
         PaymentStatusType statusType = isSuccess ? PaymentStatusType.SUCCESS : PaymentStatusType.FAILED;

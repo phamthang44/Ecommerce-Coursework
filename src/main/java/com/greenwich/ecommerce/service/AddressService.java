@@ -15,4 +15,6 @@ public interface AddressService {
     AddressResponseDTO updateAddress(Long userId, Long addressId, AddressRequestDTO addressRequestDTO);
 
     AddressResponseDTO setDefaultAddress(Long userId, Long addressId);
+    AddressResponseDTO getDefaultAddress(Long userId);
+
 }

@@ -61,4 +61,13 @@ public class AddressController {
         return ResponseEntity.ok().body(new ResponseData<>(200, "Default address set successfully!", response));
     }
 
+    @GetMapping("/default")
+    public ResponseEntity<ResponseData<AddressResponseDTO>> getDefaultAddress(
+            @AuthenticationPrincipal SecurityUserDetails user) {
+        Long userId = user.getId();
+        // Logic to get default address
+        AddressResponseDTO response = addressService.getDefaultAddress(userId);
+        return ResponseEntity.ok().body(new ResponseData<>(200, "Default address retrieved successfully!", response));
+    }
+
 }
