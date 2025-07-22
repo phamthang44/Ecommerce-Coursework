@@ -196,10 +196,10 @@ public class CartServiceImpl implements CartService {
             log.error("Cart item with id {} has insufficient stock. Available: {}, Requested: {}", cartItemId, product.getStockQuantity(), quantity);
             throw new BadRequestException("Insufficient stock for product : " + product.getName());
         }
-        if (product.getStockQuantity() == quantity) {
-            log.error("Cart item with id {} has the same quantity as stock. Available: {}, Requested: {}", cartItemId, product.getStockQuantity(), quantity);
-            throw new BadRequestException("You cannot set the quantity to the same as stock for product : " + product.getName());
-        }
+//        if (product.getStockQuantity() == quantity) {
+//            log.error("Cart item with id {} has the same quantity as stock. Available: {}, Requested: {}", cartItemId, product.getStockQuantity(), quantity);
+//            throw new BadRequestException("You cannot set the quantity to the same as stock for product : " + product.getName());
+//        }
 //        Category category = product.getCategory();
 
         cartItem.setQuantity(quantity); // Managed entity, change will be persisted

@@ -13,6 +13,7 @@ import com.greenwich.ecommerce.entity.Category;
 import com.greenwich.ecommerce.entity.Product;
 import com.greenwich.ecommerce.exception.BadRequestException;
 import com.greenwich.ecommerce.exception.InvalidDataException;
+import com.greenwich.ecommerce.exception.OutOfStockException;
 import com.greenwich.ecommerce.exception.ResourceNotFoundException;
 import com.greenwich.ecommerce.repository.ProductRepository;
 import com.greenwich.ecommerce.service.CategoryService;
@@ -443,5 +444,71 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public ProductResponseDTO updateProductAsset(Long productId, MultipartFile file, boolean isPrimary) {
         return null;
+    }
+
+    @Override
+    public ProductResponseDTO updateProductQuantity(Long productId, int quantity) {
+
+        if (productId == null || productId <= 0) {
+                log.error("Update product quantity service: Invalid product id: {}", productId);
+                throw new InvalidDataException("Product id must be greater than zero");
+        }
+
+        Product product = productRepository.getProductById(productId);
+        if (product == null) {
+            log.error("Update product quantity service: Product not found with id: {}", productId);
+            throw new ResourceNotFoundException("Product not found with id: " + productId);
+        }
+
+        if (quantity < 0) {
+            log.error("Update product quantity service: Quantity cannot be negative");
+            throw new InvalidDataException("Quantity cannot be negative");
+        }
+        product.setStockQuantity(quantity);
+        return convertToResponse(productRepository.save(product));
+    }
+
+    @Override
+    public void decreaseProductQuantity(Long productId, int quantity) {
+        if (productId == null || productId <= 0) {
+            log.error("Decrease product quantity service: Invalid product id: {}", productId);
+            throw new InvalidDataException("Product id must be greater than zero");
+        }
+
+        Product product = productRepository.getProductById(productId);
+        if (product == null) {
+            log.error("Decrease product quantity service: Product not found with id: {}", productId);
+            throw new ResourceNotFoundException("Product not found with id: " + productId);
+        }
+
+        if (quantity < 0) {
+            log.error("Decrease product quantity service: Quantity cannot be negative");
+            throw new InvalidDataException("Quantity cannot be negative");
+        }
+
+        if (product.getStockQuantity() < quantity) {
+            log.warn("Decrease product quantity service: Insufficient stock for product id: {}", productId);
+            throw new OutOfStockException("Product is out of stock or insufficient stock");
+        }
+
+        product.setStockQuantity(product.getStockQuantity() - quantity);
+        Product updatedProduct = productRepository.save(product);
+        log.info("Stock decreased successfully for product id: {}, new stock: {}", productId, product.getStockQuantity());
+
+        if (updatedProduct.getStockQuantity() == 0) {
+            updatedProduct.setStockStatus(StockStatus.OUT_OF_STOCK);
+            productRepository.save(updatedProduct);
+            log.info("Product id: {} is now out of stock", productId);
+        } else {
+            updatedProduct.setStockStatus(StockStatus.IN_STOCK);
+            productRepository.save(updatedProduct);
+            log.info("Product id: {} is now in stock", productId);
+        }
+
+    }
+
+    @Override
+    public void increaseStock(Long productId, int quantity) {
+
     }
 }

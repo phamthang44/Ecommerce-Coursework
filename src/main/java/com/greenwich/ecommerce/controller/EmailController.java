@@ -4,6 +4,7 @@ import com.greenwich.ecommerce.dto.response.EmailConfirmResponse;
 import com.greenwich.ecommerce.infra.email.EmailService;
 import com.greenwich.ecommerce.service.OrderService;
 import com.greenwich.ecommerce.service.PaymentService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/v1/email")
 @RequiredArgsConstructor
+ @Tag(name = "Email Management", description = "Do not use this API in production. This is for testing purposes only. It allows you to confirm email tokens and send receipts.")
 public class EmailController {
 
     private final EmailService emailService;
