@@ -7,9 +7,7 @@ import com.greenwich.ecommerce.dto.request.CreatePaymentInput;
 import com.greenwich.ecommerce.dto.request.PaymentProcessRequest;
 import com.greenwich.ecommerce.dto.response.*;
 import com.greenwich.ecommerce.entity.*;
-import com.greenwich.ecommerce.exception.BadRequestException;
-import com.greenwich.ecommerce.exception.InvalidDataException;
-import com.greenwich.ecommerce.exception.UnauthorizedException;
+import com.greenwich.ecommerce.exception.*;
 import com.greenwich.ecommerce.infra.email.EmailService;
 import com.greenwich.ecommerce.repository.OrderRepository;
 import com.greenwich.ecommerce.repository.OrderStatusRepository;
@@ -109,9 +107,9 @@ public class PaymentServiceImpl implements PaymentService {
     @Transactional
     public boolean validateAndUpdatePaymentStatus(String visaCheckReference) {
         Payment payment = paymentRepository.findByVisaCheckReference(visaCheckReference)
-                .orElseThrow(() -> new RuntimeException("Payment not found"));
+                .orElseThrow(() -> new PaymentException("Payment not found"));
         if (!payment.getStatus().equals(paymentStatusRepository.findByPaymentStatus(PaymentStatusType.PENDING))) {
-            throw new BadRequestException("The payment must be followed by right flow!");
+            throw new PaymentException("The payment must be followed by right flow!");
         }
         boolean isSuccess = verifyPayment(visaCheckReference); // Gọi hàm verify
 
@@ -180,7 +178,8 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     public Payment getPaymentByReference(String visaCheckReference) {
-        return null;
+        return paymentRepository.findByVisaCheckReference(visaCheckReference)
+                .orElseThrow(() -> new NotFoundException("Payment not found with Visa Check Reference: " + visaCheckReference));
     }
 
     @Override
