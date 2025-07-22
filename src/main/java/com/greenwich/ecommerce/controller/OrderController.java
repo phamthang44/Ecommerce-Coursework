@@ -60,6 +60,6 @@ public class OrderController {
         log.info("Creating order item for user {} with selected item", user.getId());
         OrderResponseDTO orderItemResponse = orderService.createOrder(request, user.getId());
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(new ResponseData<>(200, "Order item created successfully", orderItemResponse));
+        return ResponseEntity.status(HttpStatus.CREATED).body(new ResponseData<>(HttpStatus.CREATED.value(), "Order item created successfully", orderItemResponse));
     }
 }

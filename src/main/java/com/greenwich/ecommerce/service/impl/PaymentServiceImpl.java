@@ -10,11 +10,13 @@ import com.greenwich.ecommerce.entity.*;
 import com.greenwich.ecommerce.exception.BadRequestException;
 import com.greenwich.ecommerce.exception.InvalidDataException;
 import com.greenwich.ecommerce.exception.UnauthorizedException;
+import com.greenwich.ecommerce.infra.email.EmailService;
 import com.greenwich.ecommerce.repository.OrderRepository;
 import com.greenwich.ecommerce.repository.OrderStatusRepository;
 import com.greenwich.ecommerce.repository.PaymentRepository;
 import com.greenwich.ecommerce.repository.PaymentStatusRepository;
 import com.greenwich.ecommerce.service.PaymentService;
+import com.greenwich.ecommerce.service.ProductService;
 import com.greenwich.ecommerce.service.UserService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -42,6 +44,8 @@ public class PaymentServiceImpl implements PaymentService {
     private final UserService userService;
     private final PaymentValidator paymentValidator;
     private final OrderStatusRepository orderStatusRepository;
+    private final EmailService emailService;
+    private final ProductService productService;
 
     @Override
     @Transactional
@@ -121,6 +125,15 @@ public class PaymentServiceImpl implements PaymentService {
             OrderStatus orderStatus = orderStatusRepository.findByOrderStatusName(OrderStatusType.PAID);
             order.setOrderStatus(orderStatus);
             orderRepository.save(order);
+
+            log.info("Update order status: {}", orderStatus.getStatusName());
+
+            // Update product stock if payment is successful
+            List<OrderItem> orderItems = order.getOrderItems();
+            for (OrderItem item : orderItems) {
+                Product product = item.getProduct();
+                productService.decreaseProductQuantity(product.getId(), item.getQuantity());
+            }
         }
 
         return isSuccess;
@@ -142,7 +155,11 @@ public class PaymentServiceImpl implements PaymentService {
         log.info("Payment processed successfully for reference: {}", request.getVisaCheckReference());
 
         String message = "Payment verified and processed successfully! Your order is paid successfully.";
-
+        try {
+            emailService.sendReceiptEmail(payment);
+        } catch (Exception e) {
+            log.error("Failed to send payment confirmation email: {}", e.getMessage());
+        }
         return PaymentProcessResponse.builder()
                 .visaCheckReference(payment.getVisaCheckReference())
                 .paymentTime(payment.getPaymentDate())
