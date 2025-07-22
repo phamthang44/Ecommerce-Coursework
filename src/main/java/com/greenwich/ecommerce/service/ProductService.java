@@ -27,4 +27,7 @@ public interface ProductService {
     ProductResponseDTO updateProductAsset(Long productId, MultipartFile file, boolean isPrimary);
 
     PageResponse<ProductResponseDTO> searchProductWithKeyWord(int pageNo, int pageSize, String keyword);
+    ProductResponseDTO updateProductQuantity(Long productId, int quantity);
+    void decreaseProductQuantity(Long productId, int quantity);
+    void increaseStock(Long productId, int quantity);
 }

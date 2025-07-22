@@ -4,6 +4,7 @@ package com.greenwich.ecommerce.dto.response;
 import com.greenwich.ecommerce.entity.CartItem;
 import lombok.*;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
@@ -13,7 +14,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class CartResponseDTO {
+public class CartResponseDTO implements Serializable {
 
     private List<CartItemResponseDTO> cartItems;
     private BigDecimal totalPrice;

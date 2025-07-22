@@ -1,20 +1,21 @@
-//package com.greenwich.ecommerce.entity;
-//
-//import jakarta.persistence.AttributeOverride;
-//import jakarta.persistence.Column;
-//import jakarta.persistence.Entity;
-//import jakarta.persistence.Table;
-//import lombok.*;
-//
-//@Getter
-//@Setter
-//@NoArgsConstructor
-//@AllArgsConstructor
-//@Builder
-//@Entity
-//@Table(name = "order_status")
-//@AttributeOverride(name = "id", column = @Column(name = "status_id"))
-//public class OrderStatus extends AbstractEntity {
-//    @Column(name = "name", nullable = false)
-//    private String statusName;
-//}
+package com.greenwich.ecommerce.entity;
+
+import com.greenwich.ecommerce.common.enums.OrderStatusType;
+import jakarta.persistence.*;
+import lombok.*;
+
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+@Entity
+@Table(name = "order_status")
+@AttributeOverride(name = "id", column = @Column(name = "status_id"))
+public class OrderStatus extends AbstractEntity {
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "name", nullable = false)
+    private OrderStatusType statusName;
+
+}

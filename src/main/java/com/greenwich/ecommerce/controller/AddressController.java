@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/address")
 @RequiredArgsConstructor
 @Slf4j
-@Tag(name = "Address Management", description = "Endpoints for managing address in user account")
+@Tag(name = "Address Management", description = "Endpoints for managing address in user account including adding, updating, and setting default address")
 public class AddressController {
 
     private final AddressService addressService;
@@ -59,6 +59,15 @@ public class AddressController {
         // Logic to set default address
         AddressResponseDTO response = addressService.setDefaultAddress(userId, addressId);
         return ResponseEntity.ok().body(new ResponseData<>(200, "Default address set successfully!", response));
+    }
+
+    @GetMapping("/default")
+    public ResponseEntity<ResponseData<AddressResponseDTO>> getDefaultAddress(
+            @AuthenticationPrincipal SecurityUserDetails user) {
+        Long userId = user.getId();
+        // Logic to get default address
+        AddressResponseDTO response = addressService.getDefaultAddress(userId);
+        return ResponseEntity.ok().body(new ResponseData<>(200, "Default address retrieved successfully!", response));
     }
 
 }

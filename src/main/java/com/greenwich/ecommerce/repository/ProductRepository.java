@@ -1,6 +1,6 @@
 package com.greenwich.ecommerce.repository;
 
-import com.greenwich.ecommerce.entity.Category;
+
 import com.greenwich.ecommerce.entity.Product;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

@@ -95,11 +95,10 @@ public class CartServiceImpl implements CartService {
 
     private String getCartItemAssetUrl(CartItem cartItem) {
         if (cartItem.getProduct() != null && cartItem.getProduct().getAssets() != null && !cartItem.getProduct().getAssets().isEmpty()) {
-
             Asset asset = assetService.getAssetByUsageId(cartItem.getProduct().getId());
             if (asset == null) {
                 log.warn("No asset found for product with id: {}", cartItem.getProduct().getId());
-                return assetService.getAssetById(1L).getUrl(); // or a default image URL
+                return assetService.getAssetById(2L).getUrl(); // or a default image URL
             }
             return asset.getUrl();
         }
@@ -197,10 +196,10 @@ public class CartServiceImpl implements CartService {
             log.error("Cart item with id {} has insufficient stock. Available: {}, Requested: {}", cartItemId, product.getStockQuantity(), quantity);
             throw new BadRequestException("Insufficient stock for product : " + product.getName());
         }
-        if (product.getStockQuantity() == quantity) {
-            log.error("Cart item with id {} has the same quantity as stock. Available: {}, Requested: {}", cartItemId, product.getStockQuantity(), quantity);
-            throw new BadRequestException("You cannot set the quantity to the same as stock for product : " + product.getName());
-        }
+//        if (product.getStockQuantity() == quantity) {
+//            log.error("Cart item with id {} has the same quantity as stock. Available: {}, Requested: {}", cartItemId, product.getStockQuantity(), quantity);
+//            throw new BadRequestException("You cannot set the quantity to the same as stock for product : " + product.getName());
+//        }
 //        Category category = product.getCategory();
 
         cartItem.setQuantity(quantity); // Managed entity, change will be persisted
@@ -248,7 +247,7 @@ public class CartServiceImpl implements CartService {
 
         List<CartItem> cartItems = cartItemRepository.findAllById(items.getCartItemIds());
         for (CartItem item : cartItems) {
-            if (isCartItemBelongToUser(userId, item)) {
+            if (!isCartItemBelongToUser(userId, item)) {
                 log.error("Remove cart items : Cart item with id {} does not belong to user {}", item.getId(), userId);
                 throw new UnauthorizedException("You do not have permission to delete this cart item");
             }

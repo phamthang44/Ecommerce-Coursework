@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.mail.MessagingException;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -155,7 +156,6 @@ public class GlobalHandlerException {
         errorResponse.setStatus(CONFLICT.value());
         errorResponse.setError(CONFLICT.getReasonPhrase());
         errorResponse.setMessage(e.getMessage());
-
         return errorResponse;
     }
 
@@ -258,5 +258,69 @@ public class GlobalHandlerException {
 
         return errorResponse;
     }
+
+    @ExceptionHandler(MessagingException.class)
+    @ResponseStatus(INTERNAL_SERVER_ERROR)
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "500", description = "Internal Server Error",
+                    content = {@Content(mediaType = APPLICATION_JSON_VALUE,
+                            examples = @ExampleObject(
+                                    name = "500 Response",
+                                    summary = "Handle exception when internal server error",
+                                    value = """
+                                            {
+                                              "timestamp": "2023-10-19T06:35:52.333+00:00",
+                                              "status": 500,
+                                              "path": "/api/v1/...",
+                                              "error": "Internal Server Error",
+                                              "message": "Send email fail, please try again"
+                                            }
+                                            """
+                            ))})
+    })
+    public ErrorResponse handleMessagingException(MessagingException e, WebRequest request) {
+        ErrorResponse errorResponse = new ErrorResponse();
+        errorResponse.setTimestamp(new Date());
+        errorResponse.setPath(request.getDescription(false).replace("uri=", ""));
+        errorResponse.setStatus(INTERNAL_SERVER_ERROR.value());
+        errorResponse.setError(INTERNAL_SERVER_ERROR.getReasonPhrase());
+        errorResponse.setMessage(e.getMessage());
+
+        return errorResponse;
+    }
+
+    @ExceptionHandler(OutOfStockException.class)
+    @ResponseStatus(CONFLICT)
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "409", description = "Conflict - Out of Stock",
+                    content = {@Content(mediaType = APPLICATION_JSON_VALUE,
+                            examples = @ExampleObject(
+                                    name = "409 Response",
+                                    summary = "Handle exception when the product is out of stock",
+                                    value = """
+                                            {
+                                              "timestamp": "2023-10-19T06:35:52.333+00:00",
+                                              "status": 409,
+                                              "path": "/api/v1/...",
+                                              "error": "Conflict",
+                                              "message": "The product is out of stock, please try again later"
+                                            }
+                                            """
+                            ))})
+    })
+    public ErrorResponse handleOutOfStockException(OutOfStockException e, WebRequest request) {
+        return getErrorResponse(request, e.getMessage(), e);
+    }
+
+    private ErrorResponse getErrorResponse(WebRequest request, String message, OutOfStockException e) {
+        ErrorResponse errorResponse = new ErrorResponse();
+        errorResponse.setTimestamp(new Date());
+        errorResponse.setPath(request.getDescription(false).replace("uri=", ""));
+        errorResponse.setStatus(CONFLICT.value());
+        errorResponse.setError(CONFLICT.getReasonPhrase());
+        errorResponse.setMessage(message);
+        return errorResponse;
+    }
+
 
 }
