@@ -9,6 +9,7 @@ import com.greenwich.ecommerce.service.UserService;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -28,7 +29,7 @@ public class UserController {
     private final UserService userService;
 
     @PatchMapping("/{id}")
-    public ResponseEntity<ResponseData<UserDetailsResponse>> updateUser(@PathVariable("id") Long id, @Valid @RequestBody UserRequestPatchDTO dto) {
+    public ResponseEntity<ResponseData<UserDetailsResponse>> updateUser(@Min(1) @PathVariable("id") Long id, @Valid @RequestBody UserRequestPatchDTO dto) {
         log.info("Updating user with ID: {}", id);
         UserDetailsResponse updatedUser = userService.updateUserRole(id, dto.getUserType());
         return ResponseEntity.ok(new ResponseData<>(200, "User updated successfully", updatedUser));
@@ -45,7 +46,7 @@ public class UserController {
     }
 
     @PutMapping("/{id}/address")
-    public ResponseEntity<ResponseData<UserDetailsResponse>> updateUserAddress(@PathVariable("id") Long id, @RequestBody String address) {
+    public ResponseEntity<ResponseData<UserDetailsResponse>> updateUserAddress(@Min(1) @PathVariable("id") Long id, @RequestBody String address) {
         log.info("Updating address for user with ID: {}", id);
 //        UserDetailsResponse updatedUser = userService.updateUserAddress(id, address);
         return ResponseEntity.ok(new ResponseData<>(200, "User address updated successfully", null));

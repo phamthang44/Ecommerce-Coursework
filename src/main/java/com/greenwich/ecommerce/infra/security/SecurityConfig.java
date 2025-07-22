@@ -15,6 +15,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -43,25 +44,6 @@ public class SecurityConfig {
     public static final String[] WHITE_LIST = {
             "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/swagger-ui/index.html"
     };
-
-//    public static final String[] ADMIN_LIST = {
-//            "/api/v1/users/**",
-//            "/api/v1/categories/**",
-//            "/api/v1/products/**",
-//            "/api/v1/orders/**",
-//            "/api/v1/roles/**",
-//            "/api/v1/users/current/role",
-//    };
-//
-//    public static final String[] CUSTOMER_LIST = {
-//            "/api/v1/users/current",
-//            "/api/v1/users/current/**",
-//            "/api/v1/users/logout",
-//            "/api/v1/products/{id}",
-//            "/api/v1/products",
-//            "/api/v1/cart/items",
-//            "/api/v1/cart",
-//    };
 
     @Bean
     public PasswordEncoder passwordEncoder() {

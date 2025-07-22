@@ -13,6 +13,7 @@ import com.greenwich.ecommerce.repository.OrderChannelRepository;
 import com.greenwich.ecommerce.repository.OrderRepository;
 import com.greenwich.ecommerce.repository.OrderStatusRepository;
 import com.greenwich.ecommerce.service.*;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -35,6 +36,7 @@ public class OrderServiceImpl implements OrderService {
     private final OrderChannelRepository orderChannelRepository;
     private final ProductService productService;
     private final OrderStatusRepository orderStatusRepository;
+    private final OrderServiceValidator orderServiceValidator;
 //
 //    // lay tat ca order cua 1 thang user
 //    public OrderResponseDTO getOrderByUserId(Long userId) {
@@ -122,6 +124,7 @@ public class OrderServiceImpl implements OrderService {
 //        return getOrderResponseDTO(orderRepository.save(order));
 //    }
 
+    @Transactional
     @Override
     public OrderResponseDTO createOrder(OrderRequestDTO orderRequestDTO, Long userId) {
         if (orderRequestDTO == null || orderRequestDTO.getItems() == null || orderRequestDTO.getItems().isEmpty()) {
@@ -244,8 +247,23 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public OrderResponseDTO getOrderById(Long orderId) {
-        return null;
+    public OrderResponseDTO getOrderById(Long orderId, Long userId) {
+        orderServiceValidator.validateOrderId(orderId);
+        orderServiceValidator.validateUserId(userId);
+
+        log.info("Fetching order with ID: {}", orderId);
+        Order order = orderRepository.getOrderById(orderId);
+
+        if (!isOrderBelongsToUser(order, userId)) {
+            log.error("Order does not belong to user ID {} with order ID: {} ", userId,  orderId);
+            throw new UnauthorizedException("Order does not belong to user ID: " + userId + " with order ID: " + orderId);
+        }
+
+        return getOrderResponseDTO(order);
+    }
+
+    private boolean isOrderBelongsToUser(Order order, Long userId) {
+        return order != null && order.getUser().getId().equals(userId);
     }
 
     @Override
@@ -257,4 +275,5 @@ public class OrderServiceImpl implements OrderService {
     public OrderResponseDTO createOrderWithSelectedItems(OrderItemRequestDTO items, Long userId) {
         return null;
     }
+
 }

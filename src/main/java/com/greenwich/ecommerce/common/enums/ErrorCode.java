@@ -29,7 +29,8 @@ public enum ErrorCode {
     ACCESS_DENIED("403", "You don't have permission to access this resource"),
     REDIS_CONNECTION_ERROR("503", "Service temporarily unavailable due to Redis connection failure"),
     AUTHENTICATION_SERVICE_ERROR("401", "Authentication service error, please try again later"),
-    SERVICE_UNAVAILABLE("503", "Service temporarily unavailable, please try again later"),;
+    SERVICE_UNAVAILABLE("503", "Service temporarily unavailable, please try again later"),
+    PAYMENT_ERROR("500", "Payment processing error: %s"),;
 
     private final String code;
     private final String messageTemplate;

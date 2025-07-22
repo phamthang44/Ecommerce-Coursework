@@ -15,27 +15,6 @@ import java.util.List;
 @Configuration
 public class AppConfig {
 
-//    @Bean
-//    public CorsConfigurationSource corsConfigurationSource() {
-//        CorsConfiguration config = new CorsConfiguration();
-//
-//        config.setAllowedOriginPatterns(List.of(
-//                "http://localhost:3000",
-//                "http://127.0.0.1:*",
-//                "http://100.81.52.73:*"
-//        ));
-//
-//        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH"));
-//        config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
-//        config.setExposedHeaders(List.of("Authorization"));
-//        config.setAllowCredentials(true); // Cho phép gửi cookie / Authorization
-//
-//        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-//        source.registerCorsConfiguration("/**", config);
-//
-//        return source;
-//    }
-
     @Bean
     public WebMvcConfigurer corsConfigurer() {
         return new WebMvcConfigurer() {

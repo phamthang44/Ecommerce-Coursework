@@ -9,6 +9,7 @@ import com.greenwich.ecommerce.infra.security.SecurityUserDetails;
 import com.greenwich.ecommerce.service.OrderService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -61,5 +62,14 @@ public class OrderController {
         OrderResponseDTO orderItemResponse = orderService.createOrder(request, user.getId());
 
         return ResponseEntity.status(HttpStatus.CREATED).body(new ResponseData<>(HttpStatus.CREATED.value(), "Order item created successfully", orderItemResponse));
+    }
+
+    @GetMapping("/{orderId}")
+    @Operation(method= "GET", summary="Get order by ID", description="This API allows you to get an order by its ID")
+    public ResponseEntity<ResponseData<OrderResponseDTO>> getOrderById(@Min(1) @PathVariable("orderId") Long orderId, @AuthenticationPrincipal SecurityUserDetails user) {
+        log.info("Fetching order with ID: {}", orderId);
+        Long userId = user.getId();
+        OrderResponseDTO order = orderService.getOrderById(orderId, userId);
+        return ResponseEntity.ok(new ResponseData<>(200, "Order found!", order));
     }
 }
