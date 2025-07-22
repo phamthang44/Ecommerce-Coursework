@@ -5,5 +5,6 @@ import com.greenwich.ecommerce.dto.response.ReceiptResponseDTO;
 import com.greenwich.ecommerce.entity.User;
 
 public interface ReceiptService {
-    ReceiptResponseDTO createReceipt(ReceiptRequestDTO receiptRequestDTO, User user);
+    ReceiptResponseDTO getReceiptById(Long receiptId, Long userId);
+    ReceiptResponseDTO createReceipt(ReceiptRequestDTO receiptRequestDTO, Long  userId);
 }

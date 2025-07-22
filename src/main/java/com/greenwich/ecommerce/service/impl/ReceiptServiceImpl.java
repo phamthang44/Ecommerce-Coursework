@@ -19,20 +19,35 @@ import org.springframework.stereotype.Service;
 @Service
 @Slf4j
 public class ReceiptServiceImpl implements ReceiptService {
-    private final OrderServiceValidator orderServiceValidator;
+    private final ReceiptServiceValidator receiptServiceValidator;
     private final ReceiptRepository receiptRepository;
     private final UserService userService;
     private final PaymentService paymentService;
 
-//    @Override
-//    public ReceiptResponseDTO getReceiptById(ReceiptResponseDTO receiptRequest) {
-//        receiptRepository.findById(receiptRequest.getId());
-//
-//
-//
-//
-//        return null;
-//    }
+    @Override
+    public ReceiptResponseDTO getReceiptById(Long receiptId, Long userId) {
+        receiptServiceValidator.validateUserId(userId);
+        receiptServiceValidator.validateReceiptId(receiptId);
+
+        if(receiptId == null) {
+            log.error("Receipt ID cannot be null");
+            throw new IllegalArgumentException("Receipt ID cannot be null");
+        }
+
+        if( receiptRepository.findById(receiptId).isEmpty()) {
+            log.error("Receipt not found");
+            throw new IllegalArgumentException("Receipt not found");
+        }
+
+        Receipt receipt = receiptRepository.getReceiptById(receiptId);
+
+        if (!isReceiptBelongToUser(userId, receipt)) {
+            log.error("Receipt does not belong to the user");
+            throw new IllegalArgumentException("Receipt does not belong to the user");
+        }
+
+        return getReceiptResponseDTO(receipt);
+    }
 
     private ReceiptResponseDTO getReceiptResponseDTO(Receipt receipt) {
         if (receipt == null) {
@@ -45,16 +60,16 @@ public class ReceiptServiceImpl implements ReceiptService {
                 .paymentId(receipt.getPayment().getId())
                 .orderId(receipt.getPayment().getOrder().getId())
                 .finalPrice(receipt.getPayment().getAmount())
-                .paymentStatus(receipt.getPayment().getStatus().toString())
-                .referenceNumber(receipt.getPayment().getVisaCheckReference())
+                .paymentStatus(receipt.getPayment().getStatus().getStatusName().toString())
                 .build();
     }
 
-    public ReceiptResponseDTO createReceipt(ReceiptRequestDTO receiptRequestDTO, User user) {
-        if (receiptRequestDTO == null) {
-            log.error("Receipt request is null");
-            throw new IllegalArgumentException("Receipt request is null");
-        }
+    @Override
+    public ReceiptResponseDTO createReceipt(ReceiptRequestDTO receiptRequestDTO, Long userId) {
+
+        receiptServiceValidator.validateReceiptRequest(receiptRequestDTO);
+
+        User user = userService.getUserById(userId);
 
         if (user == null) {
             log.error("User not found");
@@ -72,5 +87,9 @@ public class ReceiptServiceImpl implements ReceiptService {
         receiptRepository.save(receipt);
 
         return getReceiptResponseDTO(receipt);
+    }
+
+    private boolean isReceiptBelongToUser(Long userId, Receipt receipt) {
+        return receipt.getUser().getId().equals(userId);
     }
 }

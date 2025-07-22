@@ -15,5 +15,4 @@ public class ReceiptResponseDTO {
     private Long paymentId;
     private BigDecimal finalPrice;
     private String paymentStatus;
-    private String referenceNumber; // visa check ref
 }

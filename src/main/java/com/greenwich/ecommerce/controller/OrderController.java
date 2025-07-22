@@ -64,6 +64,7 @@ public class OrderController {
     }
 
     @GetMapping("/{orderId}")
+    @Operation(method= "GET", summary="Get order by ID", description="This API allows you to get an order by its ID")
     public ResponseEntity<ResponseData<OrderResponseDTO>> getOrderById(@PathVariable("orderId") Long orderId, @AuthenticationPrincipal SecurityUserDetails user) {
         log.info("Fetching order with ID: {}", orderId);
         Long userId = user.getId();
