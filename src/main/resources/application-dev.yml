@@ -1,0 +1,52 @@
+spring:
+  config:
+    activate:
+      on-profile: dev
+  datasource:
+    url: ${MYSQL_URL:jdbc:mysql://localhost:3306/ecommerce_db}
+    username: ${MYSQL_USER:root}
+    password: ${MYSQL_PASSWORD:default_password}
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+    show_sql: true
+    hibernate:
+      ddl-auto: none
+  flyway:
+    enabled: false
+    locations: classpath:db/migration/mysql
+    baseline-on-migrate: true
+    baseline-version: 1.0.0
+  sql:
+    init:
+      mode: embedded
+      platform: mysql
+      schema-locations:
+        - classpath:init_db.sql
+
+cloudinary:
+  cloudName: ${CLOUDINARY_CLOUD_NAME}
+  apiKey: ${CLOUDINARY_API_KEY}
+  apiSecret: ${CLOUDINARY_API_SECRET}
+
+open:
+  api:
+    serverUrl: http://${RADMIN_IP}:${server.port}
+    title: API Service for Development Environment
+    version: v1.0.0
+    serverName: server API for development in Scrum project
+    description: This is the API documentation for the development environment of the Scrum project. It includes endpoints for managing Products, Categories, Cart operations, and Authentication.
+
+
+
+logging:
+  level:
+    org.hibernate.orm.jdbc.bind: trace
+
+# Swagger (springdoc-openapi)
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true

@@ -3,8 +3,12 @@ package com.greenwich.ecommerce.entity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 //Northwind
@@ -12,25 +16,27 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @MappedSuperclass
+@NoArgsConstructor
+@AllArgsConstructor
 public abstract class AbstractEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank(message = "Created by cannot be blank")
-    private String createdBy;
+    @Column(name = "created_at")
+    @CreationTimestamp
+//    @Temporal(TemporalType.TIMESTAMP)
+    private LocalDateTime createdAt;
 
-    @NotNull
-    private LocalDateTime creationDate;
+    @Column(name = "updated_at", nullable = true, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP")
+    @UpdateTimestamp
+//    @Temporal(TemporalType.TIMESTAMP)
+    private LocalDateTime updatedAt;
 
-    @NotNull
-    private LocalDateTime modificationDate;
-
-    @NotNull
-    private boolean isDeleted;
-
-    @NotNull
-    private LocalDateTime deletionDate;
-
+    @PrePersist
+    public void prePersist() {
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+    }
 }

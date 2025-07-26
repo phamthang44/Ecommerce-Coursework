@@ -1,0 +1,55 @@
+spring:
+  config:
+    activate:
+      on-profile: prod
+  datasource:
+    url: ${MYSQL_URL:jdbc:mysql://localhost:3306/ecommerce_db}
+    username: ${MYSQL_USER:root}
+    password: ${MYSQL_PASSWORD:default_password}
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+    show_sql: false
+    hibernate:
+      ddl-auto: none
+  flyway:
+    enabled: false
+    locations: classpath:db/migration/mysql
+    baseline-on-migrate: true
+    baseline-version: 1.0.0
+  sql:
+    init:
+      mode: embedded
+      platform: mysql
+      schema-locations:
+        - classpath:init_db.sql
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+
+
+open:
+  api:
+    serverUrl: https://thang.tail704409.ts.net
+    title: API Service for Production Environment
+    version: v1.0.0
+    serverName: server production
+    description: Description of API Service in production environment
+
+cloudinary:
+  cloudName: ${CLOUDINARY_CLOUD_NAME}
+  apiKey: ${CLOUDINARY_API_KEY}
+  apiSecret: ${CLOUDINARY_API_SECRET}
+
+# Swagger (springdoc-openapi)
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
