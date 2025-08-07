@@ -8,6 +8,7 @@ import com.greenwich.ecommerce.dto.response.OrderResponseDTO;
 import com.greenwich.ecommerce.entity.*;
 import com.greenwich.ecommerce.exception.InvalidDataException;
 import com.greenwich.ecommerce.exception.NotFoundException;
+import com.greenwich.ecommerce.exception.OutOfStockException;
 import com.greenwich.ecommerce.exception.UnauthorizedException;
 import com.greenwich.ecommerce.repository.OrderChannelRepository;
 import com.greenwich.ecommerce.repository.OrderRepository;
@@ -20,7 +21,9 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.UUID;
 
 @RequiredArgsConstructor
 @Service
@@ -132,12 +135,24 @@ public class OrderServiceImpl implements OrderService {
             throw new InvalidDataException("Order request or items cannot be null or empty");
         }
 
-        List<OrderItemRequestDTO> cartItemId = orderRequestDTO.getItems();
-        cartItemId.forEach(cartItem -> {
+        List<OrderItemRequestDTO> cartItemIds = orderRequestDTO.getItems();
+        cartItemIds.forEach(cartItem -> {
             if (cartItem.getProductId() == null || cartItem.getProductId() <= 0) {
                 log.error("Invalid product ID in order request: {}", cartItem.getProductId());
                 throw new InvalidDataException("Invalid product ID in order request: " + cartItem.getProductId());
             }
+
+            Product product = productService.getProductEntityById(cartItem.getProductId());
+            if (product == null) {
+                log.error("Product not found with ID: {}", cartItem.getProductId());
+                throw new NotFoundException("Product not found with ID: " + cartItem.getProductId());
+            }
+
+            if (product.getStockQuantity() == 0) {
+                log.error("Product with ID {} is out of stock", cartItem.getProductId());
+                throw new OutOfStockException("Product : [" + product.getName() + "] is out of stock");
+            }
+
             if (cartItem.getQuantity() == null || cartItem.getQuantity() <= 0) {
                 log.error("Invalid quantity in order request: {}", cartItem.getQuantity());
                 throw new InvalidDataException("Invalid quantity in order request: " + cartItem.getQuantity());
@@ -155,6 +170,7 @@ public class OrderServiceImpl implements OrderService {
         }
 
         Order order = new Order();
+
         OrderChannel orderChannel = orderChannelRepository.findById(1L)
                 .orElseThrow(() -> new NotFoundException("Order channel not found with ID: 1"));
         Address address = user.getAddresses().stream().filter(
@@ -162,9 +178,9 @@ public class OrderServiceImpl implements OrderService {
                 )
                 .findFirst()
                 .orElseThrow(() -> new NotFoundException("Default address not found for user ID: " + userId));
-
-
-
+        //normalize city and country
+        String orderCode = generateOrderCode(); //hardcoded for this time, should be replaced with actual logic to get location code
+        order.setOrderCode(orderCode);
         BigDecimal totalPrice = orderRequestDTO.getItems().stream()
                 .map(item -> {
                     Product product = productService.getProductEntityById(item.getProductId());
@@ -208,6 +224,13 @@ public class OrderServiceImpl implements OrderService {
         return getOrderResponseDTO(orderRepository.save(order), userId);
     }
 
+    private String generateOrderCode() {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyMMddHHmmss");
+        String timestamp = LocalDateTime.now().format(formatter);
+        String randomPart = UUID.randomUUID().toString().replace("-", "").substring(0, 6).toUpperCase();
+        return "ORD-" + timestamp + "-" + "HCM".toUpperCase() + "-" + randomPart;
+    }
+
     private OrderResponseDTO getOrderResponseDTO(Order order) {
         if (order == null) {
             log.error("Order not found");
@@ -226,7 +249,7 @@ public class OrderServiceImpl implements OrderService {
                 .toList();
 
         return OrderResponseDTO.builder()
-                .orderId(order.getId())
+                .orderCode(order.getOrderCode())
                 .orderItems(orderItems)
                 .totalPrice(order.getTotalPrice())
                 .orderDate(order.getOrderDate())
@@ -247,12 +270,12 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public OrderResponseDTO getOrderById(Long orderId, Long userId) {
+    public OrderResponseDTO getOrderById(String orderId, Long userId) {
         orderServiceValidator.validateOrderId(orderId);
         orderServiceValidator.validateUserId(userId);
 
         log.info("Fetching order with ID: {}", orderId);
-        Order order = orderRepository.getOrderById(orderId);
+        Order order = orderRepository.getOrderByOrderCode(orderId);
 
         if (!isOrderBelongsToUser(order, userId)) {
             log.error("Order does not belong to user ID {} with order ID: {} ", userId,  orderId);

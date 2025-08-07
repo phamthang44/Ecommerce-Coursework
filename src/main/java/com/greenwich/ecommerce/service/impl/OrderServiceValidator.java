@@ -5,6 +5,7 @@ import com.greenwich.ecommerce.dto.request.OrderItemRequestDTO;
 import com.greenwich.ecommerce.dto.request.OrderRequestDTO;
 
 import com.greenwich.ecommerce.entity.OrderItem;
+import com.greenwich.ecommerce.exception.InvalidDataException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -22,12 +23,10 @@ public class OrderServiceValidator {
         }
     }
 
-    public void validateOrderId(Long orderId) {
-        Util.isLongNumber(orderId);
-
-        if (orderId <= 0) {
-            log.error("Invalid order ID: {}", orderId);
-            throw new IllegalArgumentException("Invalid order ID - must be greater than zero");
+    public void validateOrderId(String orderId) {
+        if (String.valueOf(orderId).isEmpty()) {
+            log.error("Order ID cannot be null or empty");
+            throw new InvalidDataException("Order ID cannot be null or empty");
         }
     }
 

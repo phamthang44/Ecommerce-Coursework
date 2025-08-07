@@ -24,7 +24,7 @@ public class PaymentValidator {
             throw new InvalidDataException("Payment amount must be greater than zero");
         }
 
-        if (input.getOrderId() == null || input.getOrderId() <= 0) {
+        if (input.getOrderCode() == null || input.getOrderCode().isEmpty()) {
             log.error("Visa check reference is empty or null");
             throw new InvalidDataException("Visa check reference cannot be empty or null");
         }

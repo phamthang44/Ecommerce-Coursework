@@ -7,6 +7,6 @@ import com.greenwich.ecommerce.dto.response.OrderResponseDTO;
 public interface OrderService {
     OrderResponseDTO createOrderWithSelectedItems(OrderItemRequestDTO items , Long userId);
     OrderResponseDTO createOrderWithAllItems(Long userId);
-    OrderResponseDTO getOrderById(Long orderId, Long userId);
+    OrderResponseDTO getOrderById(String orderId, Long userId);
     OrderResponseDTO createOrder(OrderRequestDTO orderRequestDTO, Long userId);
 }

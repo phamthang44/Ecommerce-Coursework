@@ -19,7 +19,7 @@ public class OrderResponseDTO {
 //    private List<OrderItemResponseDTO> orderItems;
     //------ Thanh -------------
 
-    private Long orderId;
+    private String orderCode;
     private String customerName;
     private String addressLine;
     private BigDecimal totalPrice;
