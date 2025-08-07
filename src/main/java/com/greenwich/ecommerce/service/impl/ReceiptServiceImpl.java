@@ -67,7 +67,7 @@ public class ReceiptServiceImpl implements ReceiptService {
         }
 
         return ReceiptResponseDTO.builder()
-                .id(receipt.getId())
+                .orderCode(String.valueOf(receipt.getPayment().getId()))
                 .paymentStatus(receipt.getPayment().getStatus().getStatusName().toString())
                 .finalPrice(receipt.getPayment().getAmount())
                 .visaCheckRef(receipt.getPayment().getVisaCheckReference())

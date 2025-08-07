@@ -55,10 +55,11 @@ public class PaymentServiceImpl implements PaymentService {
         log.info("Creating payment with Visa Check Reference: {}", visaCheckReference);
         PaymentStatus paymentStatus = paymentStatusRepository.findByPaymentStatus(PaymentStatusType.PENDING);
         User user = userService.getUserById(userId);
+        log.info("Payment service user ID: {}", user.getId());
         Order order = orderRepository.findById(input.getOrderCode())
                 .orElseThrow(() -> new InvalidDataException("Order not found with ID: " + input.getOrderCode()));
 
-        if (!Objects.equals(order.getUser().getId(), user.getId())) {
+        if (!order.getUser().getId().equals(user.getId())) {
             throw new UnauthorizedException("Unauthorized user for payment of order ID: " + input.getOrderCode());
         }
 
@@ -132,6 +133,10 @@ public class PaymentServiceImpl implements PaymentService {
             for (OrderItem item : orderItems) {
                 Product product = item.getProduct();
                 productService.decreaseProductQuantity(product.getId(), item.getQuantity());
+                if (product.getStockQuantity() <= 0) {
+                    productService.deleteProduct(product.getId());
+                    log.info("Product with ID {} is out of stock and has been deleted.", product.getId());
+                }
             }
         }
 
@@ -148,7 +153,7 @@ public class PaymentServiceImpl implements PaymentService {
         Payment payment = paymentRepository.findByVisaCheckReference(request.getVisaCheckReference())
                 .orElseThrow(() -> new RuntimeException("Payment not found for reference: " + request.getVisaCheckReference()));
         User user = userService.getUserById(userId);
-        if (!Objects.equals(payment.getUser().getId(), user.getId())) {
+        if (!payment.getUser().getId().equals(user.getId())) {
             throw new UnauthorizedException("Unauthorized user for payment reference: " + request.getVisaCheckReference());
         }
         log.info("Payment processed successfully for reference: {}", request.getVisaCheckReference());

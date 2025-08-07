@@ -23,6 +23,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.greenwich.ecommerce.common.enums.StockStatus.OUT_OF_STOCK;
+
 
 @Slf4j
 @RequiredArgsConstructor
@@ -149,18 +151,34 @@ public class CartServiceImpl implements CartService {
             log.info("No cart found for user id: {}, creating a new one", userId);
             return createCart(userId);
         }
+
+        if (!isCartBelongToUser(userId, cart)) {
+            log.error("Cart with id {} does not belong to user {}", cart.getId(), userId);
+            throw new UnauthorizedException("You do not have permission to access this cart");
+        }
         return cart;
     }
 
     @Override
+    @Transactional
     public CartResponseDTO getCartByUserId(Long userId) {
 
         cartServiceValidator.validateViewCartRequest(userId);
         log.info("Getting cart for user id: {}", userId);
 
         Cart cart = getOrCreateCart(userId);
-        return getCartResponseDTO(cart);
 
+        List<CartItem> cartItems = cart.getCartItems();
+        cartItems.removeIf(cartItem -> {
+            boolean shouldRemove = cartItem.getProduct().getStockQuantity() == 0 &&
+                    cartItem.getProduct().getStockStatus().equals(OUT_OF_STOCK);
+            if (shouldRemove) {
+                log.warn("Product with id {} is out of stock, removing from cart", cartItem.getProduct().getId());
+                cartItem.setCart(null);
+            }
+            return shouldRemove;
+        });
+        return getCartResponseDTO(cartRepository.save(cart));
     }
 
     private boolean isCartItemBelongToUser(Long userId, CartItem cartItem) {
