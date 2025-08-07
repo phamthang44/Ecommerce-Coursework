@@ -20,7 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
 @RestController
-@RequestMapping("/api/v1/receipt")
+@RequestMapping("/api/v1/receipts")
 @Slf4j
 @RequiredArgsConstructor
 @Validated

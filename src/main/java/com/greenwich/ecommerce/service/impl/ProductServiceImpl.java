@@ -367,7 +367,18 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public ProductResponseDTO deleteProduct(Long productId) {
-        return null;
+        if (productId == null || productId <= 0) {
+            log.error("Delete product service: Invalid product id: {}", productId);
+            throw new InvalidDataException("Product id must be greater than zero");
+        }
+        Product product = productRepository.getProductById(productId);
+        if (product == null) {
+            log.error("Delete product service: Product not found with id: {}", productId);
+            throw new ResourceNotFoundException("Product not found with id: " + productId);
+        }
+        product.setDeleted(true);
+        log.info("Delete product service: Product with id {} deleted successfully", productId);
+        return convertToResponse(productRepository.save(product));
     }
 
     @Transactional

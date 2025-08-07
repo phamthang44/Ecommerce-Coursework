@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @Builder
 public class ReceiptResponseDTO {
 
-    private Long id;
+    private String orderCode;
     private String visaCheckRef;
     private LocalDateTime paymentDate;
     private BigDecimal finalPrice;
