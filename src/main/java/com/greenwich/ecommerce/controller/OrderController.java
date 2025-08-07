@@ -64,9 +64,9 @@ public class OrderController {
         return ResponseEntity.status(HttpStatus.CREATED).body(new ResponseData<>(HttpStatus.CREATED.value(), "Order item created successfully", orderItemResponse));
     }
 
-    @GetMapping("/{orderId}")
+    @GetMapping("/{orderCode}")
     @Operation(method= "GET", summary="Get order by ID", description="This API allows you to get an order by its ID")
-    public ResponseEntity<ResponseData<OrderResponseDTO>> getOrderById(@Min(1) @PathVariable("orderId") Long orderId, @AuthenticationPrincipal SecurityUserDetails user) {
+    public ResponseEntity<ResponseData<OrderResponseDTO>> getOrderById(@PathVariable("orderCode") String orderId, @AuthenticationPrincipal SecurityUserDetails user) {
         log.info("Fetching order with ID: {}", orderId);
         Long userId = user.getId();
         OrderResponseDTO order = orderService.getOrderById(orderId, userId);

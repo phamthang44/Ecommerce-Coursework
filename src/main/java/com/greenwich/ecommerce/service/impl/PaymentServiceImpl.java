@@ -50,16 +50,16 @@ public class PaymentServiceImpl implements PaymentService {
     public PaymentCreateResponse createPayment(CreatePaymentInput input, Long userId) {
         paymentValidator.validatePaymentInputRequest(input, userId);
 
-        log.info("Creating payment for order ID: {}, amount: {}", input.getOrderId(), input.getTotalAmount());
-        String visaCheckReference = generateVisaCheckReference(input.getOrderId(), input.getTotalAmount());
+        log.info("Creating payment for order ID: {}, amount: {}", input.getOrderCode(), input.getTotalAmount());
+        String visaCheckReference = generateVisaCheckReference(input.getOrderCode(), input.getTotalAmount());
         log.info("Creating payment with Visa Check Reference: {}", visaCheckReference);
         PaymentStatus paymentStatus = paymentStatusRepository.findByPaymentStatus(PaymentStatusType.PENDING);
         User user = userService.getUserById(userId);
-        Order order = orderRepository.findById(input.getOrderId())
-                .orElseThrow(() -> new InvalidDataException("Order not found with ID: " + input.getOrderId()));
+        Order order = orderRepository.findById(input.getOrderCode())
+                .orElseThrow(() -> new InvalidDataException("Order not found with ID: " + input.getOrderCode()));
 
         if (!Objects.equals(order.getUser().getId(), user.getId())) {
-            throw new UnauthorizedException("Unauthorized user for payment of order ID: " + input.getOrderId());
+            throw new UnauthorizedException("Unauthorized user for payment of order ID: " + input.getOrderCode());
         }
 
         if (!Objects.equals(input.getTotalAmount(), order.getTotalAmount())) {
@@ -89,10 +89,11 @@ public class PaymentServiceImpl implements PaymentService {
 
 
 
-    private String generateVisaCheckReference(Long orderId, BigDecimal amount) {
-        if (orderId != null && amount != null && amount.compareTo(BigDecimal.ZERO) > 0) {
-            String reference = "VISA-" + orderId + "-" + amount.toPlainString() + "-" + UUID.randomUUID();
+    private String generateVisaCheckReference(String orderCode, BigDecimal amount) {
+        if (orderCode != null && amount != null && amount.compareTo(BigDecimal.ZERO) > 0) {
+            String reference = "VISA-" + orderCode + "-" + amount.toPlainString() + "-" + UUID.randomUUID();
             log.info("Generated Visa Check Reference: {}", reference);
+            log.info("reference length: {}", reference.length());
             return reference;
         }
         throw new InvalidDataException("OrderId and amount must be valid to generate visa reference.");
@@ -195,7 +196,7 @@ public class PaymentServiceImpl implements PaymentService {
                 .paymentId(payment.getId())
                 .paymentDate(payment.getPaymentDate())
                 .amount(payment.getAmount())
-                .orderCode(payment.getOrder().getId().toString())
+                .orderCode(payment.getOrder().getOrderCode())
                 .status(payment.getStatus().getStatusName().toString())
                 .build();
     }

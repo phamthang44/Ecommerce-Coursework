@@ -15,8 +15,11 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "`order`")
-@AttributeOverride(name = "id", column = @Column(name = "order_id"))
-public class Order extends AbstractEntity implements SoftDeletable {
+public class Order implements SoftDeletable {
+
+    @Id
+    @Column(name = "order_id")
+    private String orderCode;
 
     @ManyToOne
     @JoinColumn(name = "user_id",nullable = false)
@@ -56,6 +59,12 @@ public class Order extends AbstractEntity implements SoftDeletable {
 
     @Column(name = "is_deleted", nullable = false)
     private boolean deleted = false;
+
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
 
     @Override
     public boolean isDeleted() {
