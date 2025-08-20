@@ -1,6 +1,7 @@
 package com.greenwich.ecommerce.exception;
 
 
+import com.greenwich.ecommerce.common.enums.ErrorCode;
 import com.greenwich.ecommerce.dto.response.ResponseError;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
@@ -159,7 +160,7 @@ public class GlobalHandlerException {
         return errorResponse;
     }
 
-    @ExceptionHandler({BadCredentialsException.class, UsernameNotFoundException.class})
+    @ExceptionHandler({BadCredentialsException.class, UsernameNotFoundException.class, UnauthorizedException.class})
     @ResponseStatus(UNAUTHORIZED)
     @ApiResponse(responseCode = "401", description = "Unauthorized",
             content = {@Content(mediaType = APPLICATION_JSON_VALUE,
@@ -182,12 +183,15 @@ public class GlobalHandlerException {
             int code = Integer.parseInt(BAD_CREDENTIAL_LOGIN.getCode());
             ResponseError responseError = new ResponseError(code, "Unauthorized: Invalid email or password");
             // Handle bad credentials or user not found
-
             log.error("Unauthorized access: {}", e.getMessage());
-
             return  ResponseEntity.status(code).body(responseError);
+        } else if (e instanceof UnauthorizedException) {
+            // Handle custom unauthorized exception
+            int code = Integer.parseInt(ErrorCode.UNAUTHORIZED.getCode());
+            ResponseError responseError = new ResponseError(code, "Unauthorized: Invalid JWT token or expired");
+            log.error("Unauthorized JWT token: {}", e.getMessage());
+            return ResponseEntity.status(UNAUTHORIZED).body(responseError);
         }
-
         return ResponseEntity.status(UNAUTHORIZED).body(new ResponseError(UNAUTHORIZED.value(), e.getMessage()));
     }
 

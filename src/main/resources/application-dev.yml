@@ -3,9 +3,9 @@ spring:
     activate:
       on-profile: dev
   datasource:
-    url: ${MYSQL_URL:jdbc:mysql://localhost:3306/ecommerce_db}
-    username: ${MYSQL_USER:root}
-    password: ${MYSQL_PASSWORD:default_password}
+    url: ${MYSQL_URL}
+    username: ${MYSQL_USER}
+    password: ${MYSQL_PASSWORD}
   jpa:
     properties:
       hibernate:
@@ -18,12 +18,10 @@ spring:
     locations: classpath:db/migration/mysql
     baseline-on-migrate: true
     baseline-version: 1.0.0
-  sql:
-    init:
-      mode: embedded
-      platform: mysql
-      schema-locations:
-        - classpath:init_db.sql
+  data:
+    redis:
+        host: localhost
+        port: 6379
 
 cloudinary:
   cloudName: ${CLOUDINARY_CLOUD_NAME}

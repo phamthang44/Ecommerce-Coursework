@@ -19,4 +19,5 @@ public interface CartService{
     CartResponseDTO removeCartItemFromCart(Long cartItemId, Long userId);
     CartResponseDTO removeCartItemsFromCart(CartRequestDeleteItemsDTO items, Long userId);
     CartResponseDTO removeAllItemsFromCart(Long userId);
+    Cart getCartByUserIdEntity(Long userId);
 }

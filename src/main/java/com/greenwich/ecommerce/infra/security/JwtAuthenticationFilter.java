@@ -1,7 +1,10 @@
 package com.greenwich.ecommerce.infra.security;
 
+import com.greenwich.ecommerce.exception.UnauthorizedException;
 import com.greenwich.ecommerce.service.impl.JwtTokenService;
 import com.greenwich.ecommerce.service.impl.UserDetailsServiceImpl;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -49,15 +52,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         token = authHeader.substring(7); // Remove "Bearer "
         try {
             username = jwtTokenService.extractUsername(token);
-        } catch (Exception ex) {
-            log.warn("Invalid JWT token: {}", ex.getMessage());
-            filterChain.doFilter(request, response);
-            return;
+        } catch (ExpiredJwtException ex) {
+            log.warn("JWT expired: {}", ex.getMessage());
+            throw new UnauthorizedException("JWT expired");
+        } catch (JwtException | IllegalArgumentException ex) {
+            log.warn("Invalid JWT: {}", ex.getMessage());
+            throw new UnauthorizedException("Invalid JWT");
         }
 
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-
+            SecurityUserDetails user = (SecurityUserDetails) userDetailsService.loadUserByUsername(username);
             if (jwtTokenService.isValid(token, userDetails)) {
                 UsernamePasswordAuthenticationToken authToken =
                         new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());

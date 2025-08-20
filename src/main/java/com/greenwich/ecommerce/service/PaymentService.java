@@ -25,4 +25,6 @@ public interface PaymentService {
 
     PageResponse<PaymentResponse> getPaymentsWithPage(int pageNo, int pageSize, Long userId);
 
+    Payment getPaymentByOrderCode(String orderCode);
+
 }
