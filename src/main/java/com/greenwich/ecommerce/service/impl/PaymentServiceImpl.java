@@ -13,6 +13,7 @@ import com.greenwich.ecommerce.repository.OrderRepository;
 import com.greenwich.ecommerce.repository.OrderStatusRepository;
 import com.greenwich.ecommerce.repository.PaymentRepository;
 import com.greenwich.ecommerce.repository.PaymentStatusRepository;
+import com.greenwich.ecommerce.service.CartService;
 import com.greenwich.ecommerce.service.PaymentService;
 import com.greenwich.ecommerce.service.ProductService;
 import com.greenwich.ecommerce.service.UserService;
@@ -44,6 +45,7 @@ public class PaymentServiceImpl implements PaymentService {
     private final OrderStatusRepository orderStatusRepository;
     private final EmailService emailService;
     private final ProductService productService;
+    private final CartService cartService;
 
     @Override
     @Transactional
@@ -102,7 +104,7 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     public boolean verifyPayment(String visaCheckReference) {
-        return Math.random() < 0.9;
+        return Math.random() < 0.1;
     }
 
     @Override
@@ -138,8 +140,38 @@ public class PaymentServiceImpl implements PaymentService {
                     log.info("Product with ID {} is out of stock and has been deleted.", product.getId());
                 }
             }
-        }
+            //cart remove here
+            Long userId = payment.getUser().getId();
 
+            Cart cart = cartService.getCartByUserIdEntity(userId);
+            if (cart != null) {
+                List<CartItem> cartItemIds = cart.getCartItems();
+                cartItemIds.forEach(cartItem -> {
+                    Long productId = cartItem.getProduct().getId();
+                    if (productId <= 0) {
+                        log.error("Invalid product ID in order request: {}", productId);
+                        throw new InvalidDataException("Invalid product ID in order request: " + productId);
+                    }
+                    Product product = cartItem.getProduct();
+                    if (product.getStockQuantity() == 0) {
+                        log.error("Product with ID {} is out of stock", productId);
+                        throw new OutOfStockException("Product : [" + product.getName() + "] is out of stock");
+                    }
+
+                    if (cartItem.getQuantity() <= 0) {
+                        log.error("Invalid quantity in order request: {}", cartItem.getQuantity());
+                        throw new InvalidDataException("Invalid quantity in order request: " + cartItem.getQuantity());
+                    }
+                    log.info("Validate cart item id : {}", cartItem.getId());
+                    log.info("Validating cart item with product ID: {} and quantity: {}", productId, cartItem.getQuantity());
+                    cartService.removeCartItemFromCart(cartItem.getId(), userId);
+                });
+
+                log.info("Cart items removed for order code: {}", order.getOrderCode());
+            } else {
+                log.warn("Cart not found for user ID: {}", payment.getUser().getId());
+            }
+        }
         return isSuccess;
     }
 
@@ -227,6 +259,16 @@ public class PaymentServiceImpl implements PaymentService {
                 .build();
     }
 
-
+    @Override
+    public Payment getPaymentByOrderCode(String orderCode) {
+        if (Util.isNullOrBlank(orderCode)) {
+            throw new InvalidDataException("Invalid order code");
+        }
+        Order order = orderRepository.getOrderByOrderCode(orderCode);
+        if (order == null) {
+            throw new ResourceNotFoundException("Order not found with order code: " + orderCode);
+        }
+        return paymentRepository.getPaymentByOrder(order);
+    }
 }
 

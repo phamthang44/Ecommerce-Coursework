@@ -1,14 +1,13 @@
 package com.greenwich.ecommerce.controller;
 
 import com.greenwich.ecommerce.dto.request.LoginRequest;
+import com.greenwich.ecommerce.dto.request.RefreshTokenRequest;
 import com.greenwich.ecommerce.dto.request.RegisterRequestDTO;
 import com.greenwich.ecommerce.dto.response.LoginResponse;
 import com.greenwich.ecommerce.dto.response.ResponseData;
-import com.greenwich.ecommerce.dto.response.ResponseError;
-import com.greenwich.ecommerce.exception.CustomMessagingException;
 import com.greenwich.ecommerce.infra.security.SecurityUserDetails;
-import com.greenwich.ecommerce.service.UserService;
 import com.greenwich.ecommerce.service.impl.JwtTokenService;
+import com.greenwich.ecommerce.service.impl.RedisServiceImpl;
 import com.greenwich.ecommerce.service.impl.UserDetailsServiceImpl;
 import com.greenwich.ecommerce.service.impl.UserServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
@@ -16,17 +15,18 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.concurrent.TimeUnit;
 
 @RestController
 @RequestMapping("/api/v1/users")
@@ -38,6 +38,8 @@ public class AuthController {
     private final JwtTokenService jwtTokenService;
     private final UserServiceImpl userService;
 //    private final UserDetailsServiceImpl userDetailsService;
+    private final RedisServiceImpl redisService;
+    private final UserDetailsServiceImpl userDetailsServiceImpl;
 
 
     @Operation(method= "POST", summary="Login account", description="This API allows you to check login response")
@@ -50,11 +52,42 @@ public class AuthController {
 
         SecurityUserDetails userDetails = (SecurityUserDetails) auth.getPrincipal();
 
-        String token = jwtTokenService.generateToken(userDetails);
+        String token = jwtTokenService.generateAccessToken(userDetails);
+        String refreshToken = jwtTokenService.generateRefreshToken(userDetails);
 
-        LoginResponse loginResponse = new LoginResponse(200, "Login successful", token);
+        redisService.setValue(
+                "refresh:" + userDetails.getUsername(),
+                refreshToken,
+                7, TimeUnit.DAYS
+        );
 
-        return ResponseEntity.status(200).body(loginResponse);
+        LoginResponse loginResponse = new LoginResponse(token, refreshToken);
+
+        ResponseData<LoginResponse> authResponse = new ResponseData<>(200, "Login successful", loginResponse);
+
+        return ResponseEntity.status(200).body(authResponse);
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<ResponseData<?>> refreshToken(@RequestBody RefreshTokenRequest request) {
+        String refreshToken = request.getRefreshToken();
+
+        if (!jwtTokenService.validateToken(refreshToken)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ResponseData<>(401, "Invalid refresh token", null));
+        }
+
+        String username = jwtTokenService.getEmailFromJwtToken(refreshToken);
+        String storedToken = redisService.getValue("refresh:" + username);
+
+        if (storedToken != null && storedToken.equals(refreshToken)) {
+            SecurityUserDetails userDetails = (SecurityUserDetails) userDetailsServiceImpl.loadUserByUsername(username);
+            String newAccessToken = jwtTokenService.generateAccessToken(userDetails);
+            ResponseData<LoginResponse> responseData = new ResponseData<>(200, "Token refreshed successfully", new LoginResponse(newAccessToken, refreshToken));
+
+            return ResponseEntity.ok(responseData);
+        }
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ResponseData<>(401, "Invalid refresh token", null));
     }
 
     @Operation(method= "POST", summary="Add user", description="This API allows you to add a new user")
@@ -71,6 +104,8 @@ public class AuthController {
     @PostMapping("/logout")
     public ResponseEntity<ResponseData<Void>> logout(HttpServletRequest request) {
         // Nothing just return the message
+        log.info("Request logout, username: {}", request.getUserPrincipal().getName());
+        redisService.deleteKey("refresh:" + request.getUserPrincipal().getName());
         return ResponseEntity.status(200)
                 .body(new ResponseData<>(200, "Logout successful", null));
     }

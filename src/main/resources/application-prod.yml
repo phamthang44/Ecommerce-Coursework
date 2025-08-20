@@ -3,7 +3,7 @@ spring:
     activate:
       on-profile: prod
   datasource:
-    url: ${MYSQL_URL:jdbc:mysql://localhost:3306/ecommerce_db}
+    url: jdbc:mysql://localhost:3306/ecommerce_db
     username: ${MYSQL_USER:root}
     password: ${MYSQL_PASSWORD:default_password}
   jpa:
@@ -18,12 +18,7 @@ spring:
     locations: classpath:db/migration/mysql
     baseline-on-migrate: true
     baseline-version: 1.0.0
-  sql:
-    init:
-      mode: embedded
-      platform: mysql
-      schema-locations:
-        - classpath:init_db.sql
+
   mail:
     host: smtp.gmail.com
     port: 587
@@ -32,7 +27,10 @@ spring:
     properties:
       mail.smtp.auth: true
       mail.smtp.starttls.enable: true
-
+  data:
+    redis:
+      host: localhost
+      port: 6379
 
 open:
   api:

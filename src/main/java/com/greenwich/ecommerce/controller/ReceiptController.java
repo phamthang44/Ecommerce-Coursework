@@ -41,13 +41,13 @@ public class ReceiptController {
         return ResponseEntity.status(HttpStatus.CREATED).body(new ResponseData<>(201, "Receipt created successfully", receipt));
     }
 
-    @GetMapping("/{receiptId}")
-    @Operation(summary = "Get receipt", description = "View a receipt by its ID.")
-    public ResponseData<ReceiptResponseDTO> getReceiptById(@Min(1) @PathVariable Long receiptId, @AuthenticationPrincipal SecurityUserDetails user) {
+    @GetMapping("/{orderCode}")
+    @Operation(summary = "Get receipt", description = "View a receipt by its Order code.")
+    public ResponseData<ReceiptResponseDTO> getReceiptById(@PathVariable String orderCode, @AuthenticationPrincipal SecurityUserDetails user) {
         Long userId = user.getId();
-        log.info("Fetching receipt with ID: {} of user {}", receiptId, userId);
+        log.info("Fetching receipt with ID: {} of user {}", orderCode, userId);
 
-        ReceiptResponseDTO receipt = receiptService.getReceiptById(receiptId, userId);
+        ReceiptResponseDTO receipt = receiptService.getReceiptByOrderCode(orderCode);
 
         return new ResponseData<>(200, "Receipt found", receipt);
     }

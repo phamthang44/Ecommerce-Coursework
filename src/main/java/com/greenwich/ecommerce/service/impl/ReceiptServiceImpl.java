@@ -66,8 +66,10 @@ public class ReceiptServiceImpl implements ReceiptService {
             throw new NotFoundException("Receipt not found");
         }
 
+        String orderCode = receipt.getPayment().getOrder() != null ? receipt.getPayment().getOrder().getOrderCode() : "N/A";
+
         return ReceiptResponseDTO.builder()
-                .orderCode(String.valueOf(receipt.getPayment().getId()))
+                .orderCode(orderCode)
                 .paymentStatus(receipt.getPayment().getStatus().getStatusName().toString())
                 .finalPrice(receipt.getPayment().getAmount())
                 .visaCheckRef(receipt.getPayment().getVisaCheckReference())
@@ -131,6 +133,33 @@ public class ReceiptServiceImpl implements ReceiptService {
                 .totalPages(receipts.getTotalPages())
                 .totalElements((int) receipts.getTotalElements())
                 .items(receiptResponseDTOs)
+                .build();
+    }
+
+    @Override
+    public ReceiptResponseDTO getReceiptByOrderCode(String orderCode) {
+
+        if (orderCode == null || orderCode.isEmpty()) {
+            log.error("Order code cannot be null or empty");
+            throw new InvalidDataException("Order code cannot be null or empty");
+        }
+        log.info("Fetching receipt with order code: {}", orderCode);
+
+        Payment payment = paymentService.getPaymentByOrderCode(orderCode);
+        log.info("Fetched payment with order code: {}", payment.getOrder().getOrderCode());
+
+        Receipt receipt = receiptRepository.getReceiptByPayment(payment);
+
+        if (receipt == null) {
+            log.error("Receipt not found for order code: {}", orderCode);
+            throw new NotFoundException("Receipt not found for order code: " + orderCode);
+        }
+        return ReceiptResponseDTO.builder()
+                .orderCode(orderCode)
+                .paymentDate(receipt.getPayment().getPaymentDate())
+                .visaCheckRef(receipt.getPayment().getVisaCheckReference())
+                .finalPrice(receipt.getPayment().getAmount())
+                .paymentStatus(receipt.getPayment().getStatus().getStatusName().toString())
                 .build();
     }
 }

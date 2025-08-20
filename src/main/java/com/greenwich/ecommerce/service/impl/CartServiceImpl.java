@@ -181,6 +181,24 @@ public class CartServiceImpl implements CartService {
         return getCartResponseDTO(cartRepository.save(cart));
     }
 
+    @Override
+    public Cart getCartByUserIdEntity(Long userId) {
+        cartServiceValidator.validateViewCartRequest(userId);
+        log.info("Getting cart entity for user id: {}", userId);
+        Cart cart = getOrCreateCart(userId);
+        List<CartItem> cartItems = cart.getCartItems();
+        cartItems.removeIf(cartItem -> {
+            boolean shouldRemove = cartItem.getProduct().getStockQuantity() == 0 &&
+                    cartItem.getProduct().getStockStatus().equals(OUT_OF_STOCK);
+            if (shouldRemove) {
+                log.warn("Product with id {} is out of stock, removing from cart", cartItem.getProduct().getId());
+                cartItem.setCart(null);
+            }
+            return shouldRemove;
+        });
+        return cartRepository.save(cart);
+    }
+
     private boolean isCartItemBelongToUser(Long userId, CartItem cartItem) {
         return cartItemRepository.existsByIdAndCartUserId(cartItem.getId(), userId);
     }

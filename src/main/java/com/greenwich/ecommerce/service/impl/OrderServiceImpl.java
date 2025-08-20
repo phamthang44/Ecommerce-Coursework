@@ -159,7 +159,7 @@ public class OrderServiceImpl implements OrderService {
             }
             log.info("Validate cart item id : {}", cartItem.getCartItemId());
             log.info("Validating cart item with product ID: {} and quantity: {}", cartItem.getProductId(), cartItem.getQuantity());
-            cartService.removeCartItemFromCart(cartItem.getCartItemId(), userId);
+            //cartService.removeCartItemFromCart(cartItem.getCartItemId(), userId);
         });
 
         log.info("Creating order for user ID: {}", userId);

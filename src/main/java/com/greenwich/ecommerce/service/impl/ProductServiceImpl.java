@@ -427,7 +427,7 @@ public class ProductServiceImpl implements ProductService {
         Pageable pageable = PageRequest.of(page, pageSize);
 
         List<Product> products = productRepository.findByNameContainingIgnoreCaseAndDeletedFalse(keyword, pageable);
-        System.out.println("Search keyword: " + products.toString());
+        //System.out.println("Search keyword: " + products.toString());
         if (products.isEmpty()) {
             log.warn("No products found with keyword: {}", keyword);
             return PageResponse.<ProductResponseDTO>builder()
@@ -522,4 +522,6 @@ public class ProductServiceImpl implements ProductService {
     public void increaseStock(Long productId, int quantity) {
 
     }
+
+
 }

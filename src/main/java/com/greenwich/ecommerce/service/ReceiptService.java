@@ -10,4 +10,7 @@ public interface ReceiptService {
     ReceiptResponseDTO createReceipt(ReceiptRequestDTO receiptRequestDTO, Long  userId);
 
     PageResponse<ReceiptResponseDTO> getAllReceiptsByUserId(Long userId, int page, int size);
+
+    ReceiptResponseDTO getReceiptByOrderCode(String orderCode);
+
 }
